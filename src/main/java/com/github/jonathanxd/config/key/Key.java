@@ -33,6 +33,7 @@ package com.github.jonathanxd.config.key;
 
 import com.github.jonathanxd.config.Config;
 import com.github.jonathanxd.config.Path;
+import com.github.jonathanxd.config.converter.Converter;
 import com.github.jonathanxd.config.transformer.Transformer;
 import com.github.jonathanxd.iutils.object.GenericRepresentation;
 
@@ -106,5 +107,9 @@ public class Key<T> {
 
     public Node createNode() {
         return SimpleNode.create(this);
+    }
+
+    public <U> ConvertKey<U, T> createConvertKey(Converter<T, U> converter) {
+        return new ConvertKey<>(this, converter);
     }
 }

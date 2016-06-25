@@ -28,6 +28,8 @@
 package com.github.jonathanxd.config;
 
 import com.github.jonathanxd.config.common.MapBackend;
+import com.github.jonathanxd.config.converter.Converter;
+import com.github.jonathanxd.config.key.ConvertKey;
 import com.github.jonathanxd.config.key.Key;
 import com.github.jonathanxd.config.key.Node;
 import com.github.jonathanxd.config.serializer.Serializer;
@@ -35,6 +37,7 @@ import com.github.jonathanxd.config.transformer.Transformer;
 import com.github.jonathanxd.iutils.map.MapUtils;
 import com.github.jonathanxd.iutils.object.AbstractGenericRepresentation;
 import com.github.jonathanxd.iutils.object.GenericRepresentation;
+import com.github.jonathanxd.iutils.string.JString;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -45,6 +48,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
+import static org.junit.Assert.*;
 
 /**
  * Created by jonathan on 25/06/16.
@@ -69,22 +74,22 @@ public class ConfigTest {
 
         texto.setDefaultValue("&0Titulo &9- &7Bonito");
 
-        Assert.assertEquals(texto.getValue(), "§9Awe");
+        assertEquals(texto.getValue(), "§9Awe");
 
         config.getSerializers().registerSerializer(new TimeSetSerializer());
 
         Key<TimeSet> myKey = config.createKey(TimeSet.class, config.getPath("TEMPO"))
                 .setDefaultValue(new TimeSet(5, 6, 1));
 
-        System.out.println(myKey.getValue());
+
+        assertEquals("TimeSet[H=5, M=6, S=1]", myKey.getValue().toString());
 
 
         Key<List<TimeSet>> timeSetList = config.createKey(new AbstractGenericRepresentation<List<TimeSet>>() {
         }, config.getPath("TODOS_TEMPOS"))
                 .setDefaultValue(Arrays.asList(new TimeSet(1, 5, 9), new TimeSet(7, 6, 5)));
 
-        System.out.println(timeSetList.getValue());
-
+        assertEquals("[TimeSet[H=1, M=5, S=9], TimeSet[H=7, M=6, S=5]]", timeSetList.getValue().toString());
 
         Map<String, TimeSet> myMap = MapUtils.mapOf("Inicio", new TimeSet(1, 50, 0),
                 "Fim", new TimeSet(10, 40, 0));
@@ -92,7 +97,30 @@ public class ConfigTest {
         Key<Map<String, TimeSet>> tempos = config.createKey(new AbstractGenericRepresentation<Map<String, TimeSet>>() {}, config.getPath("TMP_I"))
                 .setDefaultValue(myMap);
 
-        System.out.println(tempos.getValue());
+
+        assertEquals("{Inicio=TimeSet[H=1, M=50, S=0], Fim=TimeSet[H=10, M=40, S=0]}", tempos.getValue().toString());
+
+
+        Key<String> stringKey = config.createKey(String.class, config.getPath("Mensagem"))
+                .setDefaultValue("Olá $nome");
+
+        ConvertKey<JString, String> nome = stringKey.createConvertKey(new Converter<String, JString>() {
+            @Override
+            public JString convert(String value, Object[] params) {
+                return JString.of(value, params);
+            }
+
+            @Override
+            public String revertConversion(JString converted, Object[] params) {
+                return converted.getOriginal();
+            }
+        });
+
+        JString convertedValue = nome.getConvertedValue(new Object[]{"nome", "Joao"});
+
+        assertEquals("Olá Joao", convertedValue.toString());
+
+
     }
 
     enum ID {
