@@ -31,15 +31,15 @@ import java.util.Map;
 
 public abstract class AbstractConfigBackend implements ConfigBackend {
 
-    public Map<String, Object> getValuesOnPath() {
+    public Map<Object, Object> getValuesOnPath() {
         return this.getValuesOnPath(null);
     }
 
-    public Map<String, Object> getSectionsOnPath() {
+    public Map<Object, Object> getSectionsOnPath() {
         return this.getSectionsOnPath(null);
     }
 
-    public Map<String, Object> getAllOnPath() {
+    public Map<Object, Object> getAllOnPath() {
         return this.getAllOnPath(null);
     }
 }

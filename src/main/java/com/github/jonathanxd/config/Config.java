@@ -36,19 +36,17 @@ import com.github.jonathanxd.config.value.ValueSetter;
 import com.github.jonathanxd.iutils.arrays.JwArray;
 import com.github.jonathanxd.iutils.object.GenericRepresentation;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Created by jonathan on 24/06/16.
  */
 public class Config<T> {
 
-    private final Map<T, String> pathTag = new HashMap<>();
+    private final Map<T, Object[]> pathTag = new HashMap<>();
 
     private final ConfigBackend backend;
 
@@ -88,7 +86,7 @@ public class Config<T> {
         return new Key<>(GenericRepresentation.aEnd(typeRepresentation), path, this, transformers);
     }
 
-    public void setTagPath(T tag, String path) {
+    public void setTagPath(T tag, Object[] path) {
         pathTag.put(tag, path);
     }
 
@@ -96,19 +94,28 @@ public class Config<T> {
         pathTag.put(tag, subPath.path);
     }
 
-    public Path<T> getPath(String path) {
+    public Path<T> getPath(Object[] path) {
         return new Path<>(this, path);
     }
 
-    public Path<T> getFullPath(String path) {
+    public Path<T> getPath(Object path) {
+        if(path instanceof Object[]) {
+            return getPath((Object[]) path);
+        } else {
+            return new Path<>(this, new Object[]{path});
+        }
+    }
+
+    /*
+    public Path<T> getFullPath(Object[] path) {
         return getPath(parsePath(path));
     }
 
-    public Path<T> getPath(String... path) {
-        return new Path<>(this, Arrays.stream(path).collect(Collectors.joining(".")));
-    }
+    public Path<T> getPath(Object... path) {
+        return new Path<>(this, path);
+    }*/
 
-    public String getPathForTag(T tag) {
+    public Object[] getPathForTag(T tag) {
         return pathTag.get(tag);
     }
 
@@ -142,7 +149,7 @@ public class Config<T> {
         for (int i = 0; i < chars.length; i++) {
             char currentChar = chars[i];
 
-            if(i == 0) {
+            if (i == 0) {
                 sb.append(currentChar);
             } else {
                 if (currentChar == '\\' && !escape) {
@@ -160,7 +167,7 @@ public class Config<T> {
         }
 
 
-        if(sb.length() > 0) {
+        if (sb.length() > 0) {
             array.add(sb.toString());
             sb.setLength(0);
         }

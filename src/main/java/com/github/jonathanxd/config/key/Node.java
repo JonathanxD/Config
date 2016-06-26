@@ -41,7 +41,7 @@ public interface Node {
 
     Node getNode(Path<?> path);
 
-    default Node getNode(String... paths) {
+    default Node getNode(Object... paths) {
         return getNode(getConfig().getPath(paths));
     }
 
@@ -62,11 +62,11 @@ public interface Node {
     <T> T getValue(GenericRepresentation<T> representation);
 
     default Node[] getChildrenNodes() {
-        Map<String, Object> sectionsOnPath = getConfig().getBackend().getSectionsOnPath(getPath().getStringPath());
+        Map<Object, Object> sectionsOnPath = getConfig().getBackend().getSectionsOnPath(getPath().getPath());
 
         return MapStream.of(sectionsOnPath)
                 .streamMap((sec, obj) -> sec)
-                .map(path -> createNewNode(getConfig(), this.getPath().withGeneric(getConfig().getFullPath(path))))
+                .map(path -> createNewNode(getConfig(), this.getPath().withGeneric(getConfig().getPath(path))))
                 .toArray(Node[]::new);
     }
 

@@ -28,6 +28,7 @@
 package com.github.jonathanxd.config;
 
 import com.github.jonathanxd.iutils.annotations.NotNull;
+import com.github.jonathanxd.iutils.arrays.ArrayUtils;
 import com.github.jonathanxd.iutils.arrays.JwArray;
 import com.github.jonathanxd.iutils.conditions.Conditions;
 
@@ -40,13 +41,13 @@ import java.util.StringJoiner;
 public class Path<T> {
 
     private final Config<T> config;
-    final String path;
+    final Object[] path;
 
     Path(Config<T> config) {
         this(config, null);
     }
 
-    Path(Config<T> config, String path) {
+    Path(Config<T> config, Object[] path) {
         this.config = config;
         this.path = path;
     }
@@ -60,34 +61,45 @@ public class Path<T> {
         if(path.isMain())
             return this;
 
-        return new Path<>(config, this.getStringPath() + "." + path.getStringPath());
+
+
+        return new Path<>(config, ArrayUtils.addAllToArray(this.path, path.path));//new Path<>(config, this.getStringPath() + "." + path.getStringPath());
     }
 
     public Path<T> path(T... ids) {
-        StringJoiner paths = new StringJoiner(".");
+        JwArray<Object> array = new JwArray<>();
+        //StringJoiner paths = new StringJoiner(".");
 
         for (T id : ids) {
-            String path = Conditions.checkNotNull(config.getPathForTag(id), "Cannot determine path of id '"+id+"'!");
+            Object[] path = Conditions.checkNotNull(config.getPathForTag(id), "Cannot determine path of id '"+id+"'!");
 
-            paths.add(path);
+            array.add(path);
         }
 
-        return new Path<>(config, paths.toString());
+        return new Path<>(config, array.toGenericArray());
     }
 
-    public String getStringPath() {
+    /*public String getStringPath() {
+        return path;
+    }*/
+
+    public Object[] getPath() {
         return path;
     }
 
+    /**
+     * Return Path or an empty string if is a Main Path
+     * @return Path or an empty string if is a Main Path
+     */
     @NotNull
-    public String getPathName() {
+    public Object getPathName() {
 
         if(isMain())
             return "";
 
-        @NotNull String[] strings = splitPath(getStringPath());
+        Object[] path = getPath();
 
-        return strings[strings.length-1];
+        return path[path.length-1];
     }
 
     @NotNull

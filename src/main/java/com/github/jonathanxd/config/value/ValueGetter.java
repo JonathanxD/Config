@@ -56,7 +56,7 @@ public class ValueGetter {
 
 
     public Object getObjectValue(Path<?> path) {
-        return backend.getValueFromPath(path.getStringPath());
+        return backend.getValueFromPath(path.getPath());
     }
 
     public <T> T getValue(Node node, GenericRepresentation<T> representation) {
@@ -78,7 +78,7 @@ public class ValueGetter {
     @SuppressWarnings("unchecked")
     private <T> T deserialize(Node node, GenericRepresentation<T> representation, List<Transformer<T>> transformerList) {
         if (backend.isSupported(representation)) {
-            return tranform(backend.getValueFromPath(node.getPath().getStringPath(), representation), transformerList);
+            return tranform(backend.getValueFromPath(node.getPath().getPath(), representation), transformerList);
         } else {
             return tranform(config.getSerializers().getRequiredSerializer(representation).deserialize(node.createNewNode(config, node.getPath()), representation), transformerList);
         }

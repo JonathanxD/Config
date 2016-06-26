@@ -72,7 +72,7 @@ public class Key<T> {
      * @return {@code this}
      */
     public Key<T> setDefaultValue(T value) {
-        if(!config.getBackend().pathExists(this.getPath().getStringPath())) {
+        if(!config.getBackend().pathExists(this.getPath().getPath())) {
             setValue(value);
         }
 

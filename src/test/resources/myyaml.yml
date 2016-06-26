@@ -1,0 +1,29 @@
+key: Value
+key1:
+  key2: Value
+TMP_I:
+  Inicio:
+    S: 0
+    H: 1
+    M: 50
+  Fim:
+    S: 0
+    H: 10
+    M: 40
+TMP0:
+  !!com.github.jonathanxd.config.ConfigTest$TimeSet {}:
+    S: 0
+    H: 1
+    M: 50
+    value:
+      S: 0
+      H: 10
+      M: 40
+  !!com.github.jonathanxd.config.ConfigTest$TimeSet {}:
+    S: 0
+    H: 0
+    M: 0
+    value:
+      S: 0
+      H: 1
+      M: 50

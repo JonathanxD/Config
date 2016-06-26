@@ -34,6 +34,8 @@ import com.github.jonathanxd.config.key.Key;
 import com.github.jonathanxd.config.key.Node;
 import com.github.jonathanxd.config.serializer.Serializer;
 import com.github.jonathanxd.config.transformer.Transformer;
+import com.github.jonathanxd.config.yaml.YamlBackend;
+import com.github.jonathanxd.iutils.exceptions.RethrowException;
 import com.github.jonathanxd.iutils.map.MapUtils;
 import com.github.jonathanxd.iutils.object.AbstractGenericRepresentation;
 import com.github.jonathanxd.iutils.object.GenericRepresentation;
@@ -45,6 +47,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -121,7 +125,38 @@ public class ConfigTest {
         assertEquals("Olá Joao", convertedValue.toString());
 
 
+        try {
+            YamlBackend yamlBackend = new YamlBackend(new File("/home/jonathan/workspace/Config/src/test/resources/myyaml.yml"));
+
+            Config<ID> config1 = new Config<>(yamlBackend);
+
+            config1.getSerializers().registerSerializer(new TimeSetSerializer());
+
+            Key<String> key = config1.createKey(String.class, config1.getPath("key"));
+
+            System.out.println(key.getValue());
+
+            Key<Map<String, TimeSet>> tempos0 = config1.createKey(new AbstractGenericRepresentation<Map<String, TimeSet>>() {}, config.getPath("TMP_I"))
+                    .setDefaultValue(myMap);
+
+            System.out.println(tempos0.getValue());
+
+            Map<TimeSet, TimeSet> myMap2 = MapUtils.mapOf(new TimeSet(0, 0, 0), new TimeSet(1, 50, 0),
+                    new TimeSet(1, 50, 0), new TimeSet(10, 40, 0));
+
+            Key<Map<TimeSet, TimeSet>> tempos1 = config1.createKey(new AbstractGenericRepresentation<Map<TimeSet, TimeSet>>() {}, config.getPath("TMP0"))
+                    .setDefaultValue(myMap2);
+
+            System.out.println(tempos1.getValue());
+
+            yamlBackend.save();
+
+        } catch (FileNotFoundException e) {
+            throw new RethrowException(e);
+        }
+
     }
+
 
     enum ID {
         NOME
@@ -160,7 +195,7 @@ public class ConfigTest {
         }
     }
 
-    class TimeSet {
+    static class TimeSet {
         private final int hour;
         private final int minutes;
         private final int seconds;
@@ -169,6 +204,10 @@ public class ConfigTest {
             this.hour = hour;
             this.minutes = minutes;
             this.seconds = seconds;
+        }
+
+        public TimeSet() {
+            this(0, 0, 0);
         }
 
         public int getHour() {

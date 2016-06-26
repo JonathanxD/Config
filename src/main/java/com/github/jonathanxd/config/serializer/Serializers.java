@@ -35,6 +35,9 @@ import com.github.jonathanxd.iutils.function.stream.MapStream;
 import com.github.jonathanxd.iutils.map.MapUtils;
 import com.github.jonathanxd.iutils.object.GenericRepresentation;
 
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -204,6 +207,8 @@ public class Serializers {
             GenericRepresentation keyType = representation.getRelated()[0];// Element
             GenericRepresentation valueType = representation.getRelated()[1];// Element
 
+            boolean defaultConstructor = hasDefaultPublicConstructor(keyType.getAClass());
+
             if (keyType.getAClass().equals(String.class)) {
                 value.forEach((key, v) -> {
                     node.getNode(key.toString()).setValue(v, valueType);
@@ -212,10 +217,16 @@ public class Serializers {
                 IntContainer intContainer = new IntContainer();
 
                 value.forEach((key, v) -> {
-                    node.getNode(String.valueOf(intContainer.get()), "key").setValue(key, keyType);
-                    node.getNode(String.valueOf(intContainer.get()), "value").setValue(v, valueType);
 
-                    intContainer.add();
+                    if(!defaultConstructor) {
+                        node.getNode(String.valueOf(intContainer.get()), "key").setValue(key, keyType);
+                        node.getNode(String.valueOf(intContainer.get()), "value").setValue(v, valueType);
+                        intContainer.add();
+                    } else {
+                        node.getNode(key).setValue(key, keyType);
+                        node.getNode(key, "value").setValue(v, valueType);
+
+                    }
                 });
             }
 
@@ -230,6 +241,7 @@ public class Serializers {
             GenericRepresentation keyType = representation.getRelated()[0];// Element
             GenericRepresentation valueType = representation.getRelated()[1];// Element
 
+            boolean defaultConstructor = hasDefaultPublicConstructor(keyType.getAClass());
 
             Map map = new HashMap();
 
@@ -237,21 +249,36 @@ public class Serializers {
 
             if (keyType.getAClass().equals(String.class)) {
                 for (Node childrenNode : childrenNodes) {
-                    String name = childrenNode.getPath().getPathName();
+                    String name = (String) childrenNode.getPath().getPathName();
                     Object value = childrenNode.getValue(valueType);
                     map.put(name, value);
                 }
 
             } else {
                 for (Node childrenNode : childrenNodes) {
-                    Object key = childrenNode.getNode("key").getValue(keyType);
-                    Object value = childrenNode.getNode("value").getValue(valueType);
+                    Object key;
+                    Object value;
 
+                    if(!defaultConstructor) {
+                        key = childrenNode.getNode("key").getValue(keyType);
+                        value = childrenNode.getNode("value").getValue(valueType);
+                    } else {
+                        key = childrenNode.getValue(keyType);
+                        value = childrenNode.getNode("value").getValue(valueType);
+                    }
                     map.put(key, value);
                 }
             }
 
             return map;
+        }
+    }
+
+    private static boolean hasDefaultPublicConstructor(Class<?> aClass) {
+        try {
+            return Modifier.isPublic(aClass.getConstructor().getModifiers());
+        } catch (NoSuchMethodException e) {
+            return false;
         }
     }
 }

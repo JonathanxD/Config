@@ -38,6 +38,7 @@ import com.github.jonathanxd.iutils.object.ObjectUtils;
 import com.github.jonathanxd.iutils.string.JString;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
@@ -59,11 +60,21 @@ public class MapBackend extends AbstractConfigBackend {
             GenericRepresentation.a(List.class).of(Number.class).build(),
             GenericRepresentation.a(List.class).build()
     };
-    private final Map<String, Object> map = new HashMap<>();
+
+    protected final Map<Object, Object> map;
+
+    public MapBackend() {
+        map = new LinkedHashMap<>();
+    }
+
+    @SuppressWarnings("unchecked")
+    public MapBackend(LinkedHashMap map) {
+        this.map = map;
+    }
 
     @Override
-    public void setValueToPath(String path, Object value) {
-        String[] paths = Path.splitPath(path);
+    public void setValueToPath(Object[] paths, Object value) {
+        //String[] paths = Path.splitPath(path);
 
         if (paths.length == 0) {
             throw new IllegalArgumentException("Null or Empty path!");
@@ -78,16 +89,16 @@ public class MapBackend extends AbstractConfigBackend {
     }
 
     @Override
-    public <T> void setValueToPath(String path, T value, GenericRepresentation<T> expectedType) {
+    public <T> void setValueToPath(Object[] path, T value, GenericRepresentation<T> expectedType) {
         setValueToPath(path, value);
     }
 
     @SuppressWarnings("unchecked")
-    private void putPath(String[] paths, Map<String, Object> map, Object value) {
+    private void putPath(Object[] paths, Map<Object, Object> map, Object value) {
         checkSupported(value);
 
         for (int x = 0; x < paths.length; ++x) {
-            String root = paths[x];
+            Object root = paths[x];
 
             if (x + 1 >= paths.length) {
                 map.put(root, value);
@@ -95,7 +106,7 @@ public class MapBackend extends AbstractConfigBackend {
                 Object atRoot = map.get(root);
 
                 if (atRoot instanceof Map) {
-                    map = (Map<String, Object>) atRoot;
+                    map = (Map<Object, Object>) atRoot;
                 } else {
                     map = new HashMap<>();
                     map.put("?", atRoot);
@@ -120,15 +131,15 @@ public class MapBackend extends AbstractConfigBackend {
 
     @SuppressWarnings("unchecked")
     @Override
-    public boolean pathExists(String path) {
+    public boolean pathExists(Object[] paths) {
 
-        Map<String, Object> map = this.map;
+        Map<Object, Object> map = this.map;
 
-        String[] paths = Path.splitPath(path);
+        //String[] paths = Path.splitPath(path);
 
         for (int x = 0; x < paths.length; ++x) {
 
-            String s = paths[x];
+            Object s = paths[x];
 
             boolean isLast = x + 1 >= paths.length;
 
@@ -138,7 +149,7 @@ public class MapBackend extends AbstractConfigBackend {
             Object o = map.get(s);
 
             if (o instanceof Map) {
-                map = (Map<String, Object>) o;
+                map = (Map<Object, Object>) o;
 
                 if (isLast)
                     return true;
@@ -153,15 +164,15 @@ public class MapBackend extends AbstractConfigBackend {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Object getValueFromPath(String path) {
+    public Object getValueFromPath(Object[] paths) {
 
-        Map<String, Object> map = this.map;
+        Map<Object, Object> map = this.map;
 
-        String[] paths = Path.splitPath(path);
+        //String[] paths = Path.splitPath(path);
 
         for (int x = 0; x < paths.length; ++x) {
 
-            String s = paths[x];
+            Object s = paths[x];
 
             boolean isLast = x + 1 >= paths.length;
 
@@ -171,7 +182,7 @@ public class MapBackend extends AbstractConfigBackend {
             Object o = map.get(s);
 
             if (o instanceof Map) {
-                map = (Map<String, Object>) o;
+                map = (Map<Object, Object>) o;
                 if (isLast)
                     return map;
             } else {
@@ -186,20 +197,20 @@ public class MapBackend extends AbstractConfigBackend {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> T getValueFromPath(String path, GenericRepresentation<T> expectedType) {
+    public <T> T getValueFromPath(Object[] path, GenericRepresentation<T> expectedType) {
         return (T) getValueFromPath(path);
     }
 
     @Override
-    public String getValueFromPathAsString(String path) {
+    public String getValueFromPathAsString(Object[] path) {
         return getValueFromPath(path).toString();
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public Map<String, Object> getValuesOnPath(String path) {
+    public Map<Object, Object> getValuesOnPath(Object[] path) {
 
-        Map<String, Object> map = getAllOnPath(path);
+        Map<Object, Object> map = getAllOnPath(path);
 
         if (map != null) {
             return filterKey(map, o1 -> !(o1 instanceof Map));
@@ -208,14 +219,14 @@ public class MapBackend extends AbstractConfigBackend {
         return null;
     }
 
-    private Map<String, Object> filterKey(Map<String, Object> in, Predicate<Object> o) {
+    private Map<Object, Object> filterKey(Map<Object, Object> in, Predicate<Object> o) {
         return MapStream.of(in).filter((s, o1) -> o.test(o1)).collect(BiCollectors.toMap());
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public Map<String, Object> getSectionsOnPath(String path) {
-        Map<String, Object> map = getAllOnPath(path);
+    public Map<Object, Object> getSectionsOnPath(Object[] path) {
+        Map<Object, Object> map = getAllOnPath(path);
 
         if (map != null) {
             return filterKey(map, o1 -> (o1 instanceof Map));
@@ -226,14 +237,14 @@ public class MapBackend extends AbstractConfigBackend {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Map<String, Object> getAllOnPath(String path) {
-        Map<String, Object> map = this.map;
+    public Map<Object, Object> getAllOnPath(Object[] paths) {
+        Map<Object, Object> map = this.map;
 
-        String[] paths = Path.splitPath(path);
+        //String[] paths = Path.splitPath(path);
 
         for (int x = 0; x < paths.length; ++x) {
 
-            String s = paths[x];
+            Object s = paths[x];
 
             boolean isLast = x + 1 >= paths.length;
 
@@ -245,7 +256,7 @@ public class MapBackend extends AbstractConfigBackend {
             Object o = map.get(s);
 
             if (o instanceof Map) {
-                map = (Map<String, Object>) o;
+                map = (Map<Object, Object>) o;
                 if (isLast)
                     break;
             } else {
@@ -268,6 +279,11 @@ public class MapBackend extends AbstractConfigBackend {
 
     @Override
     public void save() {
+
+    }
+
+    @Override
+    public void reload() {
 
     }
 

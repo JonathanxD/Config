@@ -60,7 +60,7 @@ public class ValueSetter {
             throw new IllegalArgumentException("Object '" + value + "' not supported!");
         }
 
-        backend.setValueToPath(path.getStringPath(), value);
+        backend.setValueToPath(path.getPath(), value);
     }
 
     public <T> void setValue(Key<T> key, T value) {
@@ -85,7 +85,7 @@ public class ValueSetter {
         value = transform(value, transformerList);
 
         if (backend.isSupported(representation)) {
-            backend.setValueToPath(node.getPath().getStringPath(), value, representation);
+            backend.setValueToPath(node.getPath().getPath(), value, representation);
         } else {
             config.getSerializers().getRequiredSerializer(representation).serialize(value, node.createNewNode(config, node.getPath()), representation);
         }

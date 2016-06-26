@@ -42,7 +42,7 @@ public interface ConfigBackend {
      *
      * @param path Path to value
      */
-    void setValueToPath(String path, Object value);
+    void setValueToPath(Object[] path, Object value);
 
     /**
      * Define new value
@@ -52,7 +52,7 @@ public interface ConfigBackend {
      * @param expectedType Expected Type
      * @param <T>          Type
      */
-    <T> void setValueToPath(String path, T value, GenericRepresentation<T> expectedType);
+    <T> void setValueToPath(Object[] path, T value, GenericRepresentation<T> expectedType);
 
     /**
      * Check if a path exists
@@ -60,7 +60,7 @@ public interface ConfigBackend {
      * @param path Path
      * @return True if path exists.
      */
-    boolean pathExists(String path);
+    boolean pathExists(Object[] path);
 
     /**
      * Get value in the PATH
@@ -68,7 +68,7 @@ public interface ConfigBackend {
      * @param path Path to value
      * @return Value
      */
-    Object getValueFromPath(String path);
+    Object getValueFromPath(Object[] path);
 
     /**
      * Get value in the Path expecting a type
@@ -78,7 +78,7 @@ public interface ConfigBackend {
      * @param <T>          Type
      * @return Converted Value
      */
-    <T> T getValueFromPath(String path, GenericRepresentation<T> expectedType);
+    <T> T getValueFromPath(Object[] path, GenericRepresentation<T> expectedType);
 
     /**
      * Get value IN Path as {@link String}
@@ -86,7 +86,7 @@ public interface ConfigBackend {
      * @param path Path to value
      * @return The value as {@link String}
      */
-    String getValueFromPathAsString(String path);
+    String getValueFromPathAsString(Object[] path);
 
     /**
      * Get all values in determinate path
@@ -94,7 +94,7 @@ public interface ConfigBackend {
      * @param path Path to values
      * @return Values
      */
-    Map<String, Object> getValuesOnPath(String path);
+    Map<Object, Object> getValuesOnPath(Object[] path);
 
     /**
      * Get all paths of sections in determinate path
@@ -102,7 +102,7 @@ public interface ConfigBackend {
      * @param path Path to Sections
      * @return Sections path
      */
-    Map<String, Object> getSectionsOnPath(String path);
+    Map<Object, Object> getSectionsOnPath(Object[] path);
 
     /**
      * Get all keys and sections in determinate path
@@ -110,13 +110,18 @@ public interface ConfigBackend {
      * @param path Path of keys and sections
      * @return Keys and Sections paths and values
      */
-    Map<String, Object> getAllOnPath(String path);
+    Map<Object, Object> getAllOnPath(Object[] path);
 
 
     /**
      * Save changes!
      */
     void save();
+
+    /**
+     * Reload changes
+     */
+    void reload();
 
     /**
      * Return true if type is supported
