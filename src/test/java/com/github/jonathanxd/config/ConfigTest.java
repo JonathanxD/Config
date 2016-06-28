@@ -41,7 +41,6 @@ import com.github.jonathanxd.iutils.object.AbstractGenericRepresentation;
 import com.github.jonathanxd.iutils.object.GenericRepresentation;
 import com.github.jonathanxd.iutils.string.JString;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,7 +52,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Created by jonathan on 25/06/16.
@@ -98,7 +97,8 @@ public class ConfigTest {
         Map<String, TimeSet> myMap = MapUtils.mapOf("Inicio", new TimeSet(1, 50, 0),
                 "Fim", new TimeSet(10, 40, 0));
 
-        Key<Map<String, TimeSet>> tempos = config.createKey(new AbstractGenericRepresentation<Map<String, TimeSet>>() {}, config.getPath("TMP_I"))
+        Key<Map<String, TimeSet>> tempos = config.createKey(new AbstractGenericRepresentation<Map<String, TimeSet>>() {
+        }, config.getPath("TMP_I"))
                 .setDefaultValue(myMap);
 
 
@@ -136,7 +136,8 @@ public class ConfigTest {
 
             System.out.println(key.getValue());
 
-            Key<Map<String, TimeSet>> tempos0 = config1.createKey(new AbstractGenericRepresentation<Map<String, TimeSet>>() {}, config.getPath("TMP_I"))
+            Key<Map<String, TimeSet>> tempos0 = config1.createKey(new AbstractGenericRepresentation<Map<String, TimeSet>>() {
+            }, config.getPath("TMP_I"))
                     .setDefaultValue(myMap);
 
             System.out.println(tempos0.getValue());
@@ -144,7 +145,8 @@ public class ConfigTest {
             Map<TimeSet, TimeSet> myMap2 = MapUtils.mapOf(new TimeSet(0, 0, 0), new TimeSet(1, 50, 0),
                     new TimeSet(1, 50, 0), new TimeSet(10, 40, 0));
 
-            Key<Map<TimeSet, TimeSet>> tempos1 = config1.createKey(new AbstractGenericRepresentation<Map<TimeSet, TimeSet>>() {}, config.getPath("TMP0"))
+            Key<Map<TimeSet, TimeSet>> tempos1 = config1.createKey(new AbstractGenericRepresentation<Map<TimeSet, TimeSet>>() {
+            }, config.getPath("TMP0"))
                     .setDefaultValue(myMap2);
 
             System.out.println(tempos1.getValue());
@@ -160,39 +162,6 @@ public class ConfigTest {
 
     enum ID {
         NOME
-    }
-
-    class TimeSetSerializer implements Serializer<TimeSet> {
-
-        @Override
-        public void serialize(TimeSet value, Node node, GenericRepresentation<?> representation) {
-            node.getNode("H").setValue(value.getHour(), int.class);
-            node.getNode("M").setValue(value.getMinutes(), int.class);
-            node.getNode("S").setValue(value.getSeconds(), int.class);
-        }
-
-        @Override
-        public TimeSet deserialize(Node node, GenericRepresentation<?> representation) {
-            int hour = node.getNode("H").getValue(int.class);
-            int minutes = node.getNode("M").getValue(int.class);
-            int seconds = node.getNode("S").getValue(int.class);
-
-
-            return new TimeSet(hour, minutes, seconds);
-        }
-    }
-
-    class ColorTransformer implements Transformer<String> {
-
-        @Override
-        public String transform(String input) {
-            return input.replaceAll("&([0-9a-zA-Z])", "§$1");
-        }
-
-        @Override
-        public String revertTransformation(String input) {
-            return input.replaceAll("§([0-9a-zA-Z])", "&$1");
-        }
     }
 
     static class TimeSet {
@@ -225,6 +194,39 @@ public class ConfigTest {
         @Override
         public String toString() {
             return "TimeSet[H=" + getHour() + ", M=" + getMinutes() + ", S=" + getSeconds() + "]";
+        }
+    }
+
+    class TimeSetSerializer implements Serializer<TimeSet> {
+
+        @Override
+        public void serialize(TimeSet value, Node node, GenericRepresentation<?> representation) {
+            node.getNode("H").setValue(value.getHour(), int.class);
+            node.getNode("M").setValue(value.getMinutes(), int.class);
+            node.getNode("S").setValue(value.getSeconds(), int.class);
+        }
+
+        @Override
+        public TimeSet deserialize(Node node, GenericRepresentation<?> representation) {
+            int hour = node.getNode("H").getValue(int.class);
+            int minutes = node.getNode("M").getValue(int.class);
+            int seconds = node.getNode("S").getValue(int.class);
+
+
+            return new TimeSet(hour, minutes, seconds);
+        }
+    }
+
+    class ColorTransformer implements Transformer<String> {
+
+        @Override
+        public String transform(String input) {
+            return input.replaceAll("&([0-9a-zA-Z])", "§$1");
+        }
+
+        @Override
+        public String revertTransformation(String input) {
+            return input.replaceAll("§([0-9a-zA-Z])", "&$1");
         }
     }
 }

@@ -69,8 +69,11 @@ public class YamlBackend extends MapBackend {
 
         Object load = yaml.load(new FileInputStream(file));
 
+        if(load == null)
+            return new LinkedHashMap();
+
         if (!(load instanceof LinkedHashMap)) {
-            throw new IllegalArgumentException("Cannot parse YAML. File '" + file + "'!");
+            throw new IllegalArgumentException("Cannot parse YAML. File '" + file + "' -> '"+load+"'!");
         }
 
         return (LinkedHashMap) load;
