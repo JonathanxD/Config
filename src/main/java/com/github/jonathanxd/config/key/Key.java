@@ -113,6 +113,10 @@ public class Key<T> implements BaseValuable {
         return new ConvertKey<>(this, converter);
     }
 
+    public boolean exists() {
+        return this.getConfig().getBackend().pathExists(this.getPath().getPath());
+    }
+
     @Override
     public Object getGenericValue() {
         return this.getValue();

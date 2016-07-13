@@ -59,6 +59,10 @@ public interface Node extends BaseValuable {
         return getValue(GenericRepresentation.aEnd(tClass));
     }
 
+    default boolean exists() {
+        return this.getConfig().getBackend().pathExists(this.getPath().getPath());
+    }
+
     @Override
     default Object getGenericValue() {
         return this.getValue();
