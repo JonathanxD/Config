@@ -37,7 +37,7 @@ import java.util.Map;
 /**
  * Created by jonathan on 24/06/16.
  */
-public interface Node {
+public interface Node extends BaseValuable {
 
     Node getNode(Path<?> path);
 
@@ -57,6 +57,16 @@ public interface Node {
 
     default <T> T getValue(Class<T> tClass) {
         return getValue(GenericRepresentation.aEnd(tClass));
+    }
+
+    @Override
+    default Object getGenericValue() {
+        return this.getValue();
+    }
+
+    @Override
+    default void setGenericValue(Object o) {
+        this.setValue(o);
     }
 
     <T> T getValue(GenericRepresentation<T> representation);

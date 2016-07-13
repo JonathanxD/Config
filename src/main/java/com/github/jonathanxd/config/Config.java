@@ -94,6 +94,10 @@ public class Config<T> {
         pathTag.put(tag, subPath.path);
     }
 
+    public Path<T> getTagPath(T tag) {
+        return getPath(pathTag.get(tag));
+    }
+
     public Path<T> getPath(Object[] path) {
         return new Path<>(this, path);
     }

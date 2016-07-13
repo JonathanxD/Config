@@ -30,6 +30,7 @@ package com.github.jonathanxd.config.serializer;
 import com.github.jonathanxd.config.key.Node;
 import com.github.jonathanxd.iutils.conditions.Conditions;
 import com.github.jonathanxd.iutils.containers.primitivecontainers.IntContainer;
+import com.github.jonathanxd.iutils.exceptions.RethrowException;
 import com.github.jonathanxd.iutils.function.collector.BiCollectors;
 import com.github.jonathanxd.iutils.function.stream.MapStream;
 import com.github.jonathanxd.iutils.map.MapUtils;
@@ -51,7 +52,9 @@ public class Serializers {
 
     private static final Serializers DEFAULT = new Serializers(
             MapUtils.mapOf(GenericRepresentation.aEnd(Collection.class), new CollectionSerializer(),
-                    GenericRepresentation.aEnd(Map.class), new MapSerializer())
+                    GenericRepresentation.aEnd(Map.class), new MapSerializer(),
+                    GenericRepresentation.aEnd(Class.class), new ClassSerializer(),
+                    GenericRepresentation.aEnd(Enum.class), new EnumSerializer())
     );
 
     private final Map<GenericRepresentation<?>, Serializer<?>> serializerMap = new HashMap<>();
@@ -271,6 +274,40 @@ public class Serializers {
             }
 
             return map;
+        }
+    }
+
+    public static class ClassSerializer implements Serializer<Class> {
+
+        @Override
+        public void serialize(Class value, Node node, GenericRepresentation<?> representation) {
+            node.setValue(value.getName());
+        }
+
+        @Override
+        public Class deserialize(Node node, GenericRepresentation<?> representation) {
+            try {
+                return Class.forName(String.valueOf(node.getValue()));
+            } catch (ClassNotFoundException e) {
+                throw new RethrowException(e, e.getCause());
+            }
+        }
+    }
+
+    public static class EnumSerializer implements Serializer<Enum> {
+
+        @Override
+        public void serialize(Enum value, Node node, GenericRepresentation<?> representation) {
+            node.getNode("type").setValue(value.getDeclaringClass(), Class.class);
+            node.getNode("name").setValue(value.name());
+        }
+
+        @Override
+        public Enum deserialize(Node node, GenericRepresentation<?> representation) {
+            Class type = node.getNode("type").getValue(Class.class);
+            String name = node.getNode("name").getValueAsString();
+
+            return Enum.valueOf(type, name);
         }
     }
 

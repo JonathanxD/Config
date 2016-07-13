@@ -43,7 +43,7 @@ import java.util.List;
 /**
  * Link to a Path
  */
-public class Key<T> {
+public class Key<T> implements BaseValuable {
 
     private final GenericRepresentation<T> typeRepresentation;
     private final List<Transformer<T>> transformers = new ArrayList<>();
@@ -111,5 +111,16 @@ public class Key<T> {
 
     public <U> ConvertKey<U, T> createConvertKey(Converter<T, U> converter) {
         return new ConvertKey<>(this, converter);
+    }
+
+    @Override
+    public Object getGenericValue() {
+        return this.getValue();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public void setGenericValue(Object o) {
+        this.setValue((T) o);
     }
 }
