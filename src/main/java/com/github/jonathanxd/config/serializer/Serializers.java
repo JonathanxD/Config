@@ -54,7 +54,8 @@ public class Serializers {
             MapUtils.mapOf(GenericRepresentation.aEnd(Collection.class), new CollectionSerializer(),
                     GenericRepresentation.aEnd(Map.class), new MapSerializer(),
                     GenericRepresentation.aEnd(Class.class), new ClassSerializer(),
-                    GenericRepresentation.aEnd(Enum.class), new EnumSerializer())
+                    GenericRepresentation.aEnd(Enum.class), new EnumSerializer(),
+                    GenericRepresentation.aEnd(GenericRepresentation.class), new GenericRepresentationSerializer())
     );
 
     private final Map<GenericRepresentation<?>, Serializer<?>> serializerMap = new HashMap<>();
@@ -308,6 +309,23 @@ public class Serializers {
             String name = node.getNode("name").getValueAsString();
 
             return Enum.valueOf(type, name);
+        }
+    }
+
+    public static class GenericRepresentationSerializer implements Serializer<GenericRepresentation> {
+
+        @Override
+        public void serialize(GenericRepresentation value, Node node, GenericRepresentation<?> representation) {
+            node.setValue(value.toFullString());
+        }
+
+        @Override
+        public GenericRepresentation deserialize(Node node, GenericRepresentation<?> representation) {
+            try {
+                return GenericRepresentation.fromFullString(node.getValueAsString()).get(0);
+            } catch (ClassNotFoundException e) {
+                throw new RethrowException(e, e.getCause());
+            }
         }
     }
 

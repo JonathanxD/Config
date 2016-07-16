@@ -149,7 +149,14 @@ public class ConfigTest {
             }, config.getPath("TMP0"))
                     .setDefaultValue(myMap2);
 
+            Key<GenericRepresentation<?>> gen = config1.createKey(new AbstractGenericRepresentation<GenericRepresentation<?>>() {}, config.getPath("09"))
+                    .setDefaultValue(new AbstractGenericRepresentation<List<String>>() {});
+
+
+
             System.out.println(tempos1.getValue());
+
+            System.out.println(gen.getValue());
 
             yamlBackend.save();
 
