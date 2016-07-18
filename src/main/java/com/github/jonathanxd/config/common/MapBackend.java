@@ -103,7 +103,6 @@ public class MapBackend extends AbstractConfigBackend {
 
     @SuppressWarnings("unchecked")
     private void putPath(Object[] paths, Map<Object, Object> map, Object value) {
-        checkSupported(value);
 
         for (int x = 0; x < paths.length; ++x) {
             Object root = paths[x];
@@ -276,13 +275,6 @@ public class MapBackend extends AbstractConfigBackend {
         }
 
         return map;
-    }
-
-    private void checkSupported(Object object) {
-        if (object != null && !ObjectUtils.isInstanceOfAny(object, String.class, Number.class, List.class)) {
-            throw new UnsupportedOperationException(JString.of("Unsupported type: '$object_class' (object: ${object.toString()})",
-                    "object", object, "object_class", object.getClass()).toString());
-        }
     }
 
     @Override
