@@ -7,3 +7,4 @@ build
 
 # Gradle file
 .gradle
+src/main/resources/
