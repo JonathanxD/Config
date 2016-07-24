@@ -36,11 +36,16 @@ import org.yaml.snakeyaml.Yaml;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.LinkedHashMap;
+import java.util.function.Supplier;
 
 /**
  * Created by jonathan on 25/06/16.
@@ -57,23 +62,41 @@ public class YamlBackend extends MapBackend {
         DUMPER_OPTIONS.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
     }
 
-    private final File file;
+    private final Supplier<InputStream> inputStreamSupplier;
+    private final Supplier<OutputStream> outputStreamSupplier;
     private static final Yaml yaml = new Yaml(DUMPER_OPTIONS);
 
     public YamlBackend(File file) throws FileNotFoundException {
-        super(load(file, yaml));
-        this.file = file;
+        this(() -> {
+            try {
+                return new FileInputStream(file);
+            } catch (FileNotFoundException e) {
+                throw new RethrowException(e, e.getCause());
+            }
+        }, () -> {
+            try {
+                return new FileOutputStream(file);
+            } catch (FileNotFoundException e) {
+                throw new RethrowException(e, e.getCause());
+            }
+        });
     }
 
-    private static LinkedHashMap load(File file, Yaml yaml) throws FileNotFoundException {
+    public YamlBackend(Supplier<InputStream> inputStreamSupplier, Supplier<OutputStream> outputStreamSupplier) {
+        super(load(inputStreamSupplier.get(), yaml));
+        this.inputStreamSupplier = inputStreamSupplier;
+        this.outputStreamSupplier = outputStreamSupplier;
+    }
 
-        Object load = yaml.load(new FileInputStream(file));
+    private static LinkedHashMap load(InputStream inputStream, Yaml yaml) {
+
+        Object load = yaml.load(inputStream);
 
         if(load == null)
             return new LinkedHashMap();
 
         if (!(load instanceof LinkedHashMap)) {
-            throw new IllegalArgumentException("Cannot parse YAML. File '" + file + "' -> '"+load+"'!");
+            throw new IllegalArgumentException("Cannot parse YAML. Object = '"+load+"'!");
         }
 
         return (LinkedHashMap) load;
@@ -82,7 +105,14 @@ public class YamlBackend extends MapBackend {
     @Override
     public void save() {
         try {
-            Files.write(file.toPath(), yaml.dump(this.map).getBytes(Charset.forName("UTF-8")), StandardOpenOption.CREATE);
+
+            OutputStream outputStream = outputStreamSupplier.get();
+
+            YamlBackend.yaml.dump(this.map, new OutputStreamWriter(outputStream));
+
+            outputStream.flush();
+            outputStream.close();
+
         } catch (IOException e) {
             throw new RethrowException(e);
         }
@@ -90,11 +120,7 @@ public class YamlBackend extends MapBackend {
 
     @Override
     public void reload() {
-        try {
-            this.map.clear();
-            this.map.putAll(load(file, yaml));
-        } catch (FileNotFoundException e) {
-            throw new RethrowException(e);
-        }
+        this.map.clear();
+        this.map.putAll(load(inputStreamSupplier.get(), yaml));
     }
 }
