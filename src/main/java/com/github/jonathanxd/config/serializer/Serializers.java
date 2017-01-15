@@ -36,8 +36,6 @@ import com.github.jonathanxd.iutils.function.stream.MapStream;
 import com.github.jonathanxd.iutils.map.MapUtils;
 import com.github.jonathanxd.iutils.object.GenericRepresentation;
 
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -70,6 +68,14 @@ public class Serializers {
 
     public static Serializers getDefaultSerializers() {
         return DEFAULT;
+    }
+
+    private static boolean hasDefaultPublicConstructor(Class<?> aClass) {
+        try {
+            return Modifier.isPublic(aClass.getConstructor().getModifiers());
+        } catch (NoSuchMethodException e) {
+            return false;
+        }
     }
 
     public void registerSerializer(Serializer<?> serializer) {
@@ -161,7 +167,6 @@ public class Serializers {
         return serializer.getReferences()[0];
     }
 
-
     private static final class CollectionSerializer implements Serializer<Collection> {
 
         @Override
@@ -188,11 +193,14 @@ public class Serializers {
                 throw new IllegalArgumentException("Missing element type of collection. Representation: '" + representation + "'!");
 
             Collection collection = new ArrayList();
+            try {
+                GenericRepresentation at0 = representation.getRelated()[0];// Element
 
-            GenericRepresentation at0 = representation.getRelated()[0];// Element
-
-            for (com.github.jonathanxd.config.key.Node node1 : node.getChildrenNodes()) {
-                collection.add(node1.getValue(at0));
+                for (com.github.jonathanxd.config.key.Node node1 : node.getChildrenNodes()) {
+                    collection.add(node1.getValue(at0));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
 
             return collection;
@@ -222,7 +230,7 @@ public class Serializers {
 
                 value.forEach((key, v) -> {
 
-                    if(!defaultConstructor) {
+                    if (!defaultConstructor) {
                         node.getNode(String.valueOf(intContainer.get()), "key").setValue(key, keyType);
                         node.getNode(String.valueOf(intContainer.get()), "value").setValue(v, valueType);
                         intContainer.add();
@@ -239,6 +247,8 @@ public class Serializers {
         @Override
         public Map deserialize(com.github.jonathanxd.config.key.Node node, GenericRepresentation<?> representation) {
 
+            Map map = new HashMap();
+
             if (representation.getRelated().length < 2)
                 throw new IllegalArgumentException("Missing Key and/or Value type of Map. Representation: '" + representation + "'!");
 
@@ -247,31 +257,34 @@ public class Serializers {
 
             boolean defaultConstructor = hasDefaultPublicConstructor(keyType.getAClass());
 
-            Map map = new HashMap();
+            try {
 
-            Node[] childrenNodes = node.getChildrenNodes();
+                Node[] childrenNodes = node.getChildrenNodes();
 
-            if (keyType.getAClass().equals(String.class)) {
-                for (Node childrenNode : childrenNodes) {
-                    String name = (String) childrenNode.getPath().getPathName();
-                    Object value = childrenNode.getValue(valueType);
-                    map.put(name, value);
-                }
-
-            } else {
-                for (Node childrenNode : childrenNodes) {
-                    Object key;
-                    Object value;
-
-                    if(!defaultConstructor) {
-                        key = childrenNode.getNode("key").getValue(keyType);
-                        value = childrenNode.getNode("value").getValue(valueType);
-                    } else {
-                        key = childrenNode.getValue(keyType);
-                        value = childrenNode.getNode("value").getValue(valueType);
+                if (keyType.getAClass().equals(String.class)) {
+                    for (Node childrenNode : childrenNodes) {
+                        String name = (String) childrenNode.getPath().getPathName();
+                        Object value = childrenNode.getValue(valueType);
+                        map.put(name, value);
                     }
-                    map.put(key, value);
+
+                } else {
+                    for (Node childrenNode : childrenNodes) {
+                        Object key;
+                        Object value;
+
+                        if (!defaultConstructor) {
+                            key = childrenNode.getNode("key").getValue(keyType);
+                            value = childrenNode.getNode("value").getValue(valueType);
+                        } else {
+                            key = childrenNode.getValue(keyType);
+                            value = childrenNode.getNode("value").getValue(valueType);
+                        }
+                        map.put(key, value);
+                    }
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
 
             return map;
@@ -326,14 +339,6 @@ public class Serializers {
             } catch (ClassNotFoundException e) {
                 throw new RethrowException(e, e.getCause());
             }
-        }
-    }
-
-    private static boolean hasDefaultPublicConstructor(Class<?> aClass) {
-        try {
-            return Modifier.isPublic(aClass.getConstructor().getModifiers());
-        } catch (NoSuchMethodException e) {
-            return false;
         }
     }
 }
