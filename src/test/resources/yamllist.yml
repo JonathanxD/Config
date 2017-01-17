@@ -1,0 +1,24 @@
+TEXTO: '&9Awe'
+TEMPO:
+  S: 1
+  H: 5
+  M: 6
+TODOS_TEMPOS:
+  '0':
+    S: 9
+    H: 1
+    M: 5
+  '1':
+    S: 5
+    H: 7
+    M: 6
+TMP_I:
+  Inicio:
+    S: 0
+    H: 1
+    M: 50
+  Fim:
+    S: 0
+    H: 10
+    M: 40
+Mensagem: Olá $nome
