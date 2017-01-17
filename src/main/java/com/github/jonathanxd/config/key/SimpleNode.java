@@ -3,7 +3,7 @@
  *
  *         The MIT License (MIT)
  *
- *      Copyright (c) 2016 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
+ *      Copyright (c) 2017 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
  *      Copyright (c) contributors
  *
  *
@@ -50,37 +50,42 @@ public class SimpleNode implements Node {
 
     @Override
     public Node getNode(Path<?> path) {
-        return createNewNode(config, this.path.withGeneric(path));
+        return this.createNewNode(config, this.path.withGeneric(path));
     }
 
     @Override
     public <T> void setValue(T value, GenericRepresentation<T> representation) {
-        config.getValueSetter().setValue(this, value, representation);
+        this.config.getValueSetter().setValue(this, value, representation);
     }
 
     @Override
     public Object getValue() {
-        return config.getValueGetter().getObjectValue(path);
+        return this.config.getValueGetter().getObjectValue(path);
     }
 
     @Override
     public void setValue(Object value) {
-        config.getValueSetter().setObjectValue(path, value);
+        this.config.getValueSetter().setObjectValue(path, value);
     }
 
     @Override
     public <T> T getValue(GenericRepresentation<T> representation) {
-        return config.getValueGetter().getValue(this, representation);
+        return this.config.getValueGetter().getValue(this, representation);
+    }
+
+    @Override
+    public void setClearValue() {
+        this.config.getValueSetter().setClearValue(this);
     }
 
     @Override
     public Path<?> getPath() {
-        return path;
+        return this.path;
     }
 
     @Override
     public Config<?> getConfig() {
-        return config;
+        return this.config;
     }
 
     @Override

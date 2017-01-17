@@ -3,7 +3,7 @@
  *
  *         The MIT License (MIT)
  *
- *      Copyright (c) 2016 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
+ *      Copyright (c) 2017 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
  *      Copyright (c) contributors
  *
  *
@@ -27,15 +27,10 @@
  */
 package com.github.jonathanxd.config.common;
 
-import com.github.jonathanxd.config.Path;
 import com.github.jonathanxd.config.backend.AbstractConfigBackend;
-import com.github.jonathanxd.iutils.annotations.NotNull;
-import com.github.jonathanxd.iutils.arrays.JwArray;
 import com.github.jonathanxd.iutils.function.collector.BiCollectors;
 import com.github.jonathanxd.iutils.function.stream.MapStream;
 import com.github.jonathanxd.iutils.object.GenericRepresentation;
-import com.github.jonathanxd.iutils.object.ObjectUtils;
-import com.github.jonathanxd.iutils.string.JString;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -64,9 +59,10 @@ public class MapBackend extends AbstractConfigBackend {
             GenericRepresentation.aEnd(Character.class),
             GenericRepresentation.aEnd(String.class),
             GenericRepresentation.aEnd(Number.class),
+            GenericRepresentation.aEnd(Map.class),
             GenericRepresentation.a(List.class).of(String.class).build(),
             GenericRepresentation.a(List.class).of(Number.class).build(),
-            GenericRepresentation.a(List.class).build()
+            GenericRepresentation.a(List.class).build(),
     };
 
     protected final Map<Object, Object> map;
@@ -78,6 +74,10 @@ public class MapBackend extends AbstractConfigBackend {
     @SuppressWarnings("unchecked")
     public MapBackend(LinkedHashMap map) {
         this.map = map;
+    }
+
+    public static void printMap(MapBackend mapBackend, Consumer<String> consumer) {
+        consumer.accept(mapBackend.map.toString());
     }
 
     @Override
@@ -97,6 +97,11 @@ public class MapBackend extends AbstractConfigBackend {
     }
 
     @Override
+    public void setClearPath(Object[] path) {
+        putPath(path, this.map, null);
+    }
+
+    @Override
     public <T> void setValueToPath(Object[] path, T value, GenericRepresentation<T> expectedType) {
         setValueToPath(path, value);
     }
@@ -108,7 +113,11 @@ public class MapBackend extends AbstractConfigBackend {
             Object root = paths[x];
 
             if (x + 1 >= paths.length) {
-                map.put(root, value);
+                if(value == null) {
+                    map.remove(root);
+                } else {
+                    map.put(root, value);
+                }
             } else if (map.containsKey(root)) {
                 Object atRoot = map.get(root);
 
@@ -296,9 +305,5 @@ public class MapBackend extends AbstractConfigBackend {
         }
 
         return false;
-    }
-
-    public static void printMap(MapBackend mapBackend, Consumer<String> consumer) {
-        consumer.accept(mapBackend.map.toString());
     }
 }

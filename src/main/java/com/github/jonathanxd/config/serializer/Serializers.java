@@ -3,7 +3,7 @@
  *
  *         The MIT License (MIT)
  *
- *      Copyright (c) 2016 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
+ *      Copyright (c) 2017 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
  *      Copyright (c) contributors
  *
  *
@@ -177,6 +177,8 @@ public class Serializers {
 
             GenericRepresentation at0 = representation.getRelated()[0];// Element
 
+            node.setClearValue();
+
             int x = 0;
 
             for (Object val : value) {
@@ -200,7 +202,7 @@ public class Serializers {
                     collection.add(node1.getValue(at0));
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                System.err.println("Failed to read node '" + node.getPath().getPathName() + "': " + e.getMessage());
             }
 
             return collection;
@@ -220,6 +222,8 @@ public class Serializers {
             GenericRepresentation valueType = representation.getRelated()[1];// Element
 
             boolean defaultConstructor = hasDefaultPublicConstructor(keyType.getAClass());
+
+            node.setClearValue();
 
             if (keyType.getAClass().equals(String.class)) {
                 value.forEach((key, v) -> {
@@ -284,7 +288,7 @@ public class Serializers {
                     }
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                System.err.println("Failed to read node '" + node.getPath().getPathName() + "': " + e.getMessage());
             }
 
             return map;
@@ -303,7 +307,7 @@ public class Serializers {
             try {
                 return Class.forName(String.valueOf(node.getValue()));
             } catch (ClassNotFoundException e) {
-                throw new RethrowException(e, e.getCause());
+                throw new RuntimeException(e);
             }
         }
     }

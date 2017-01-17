@@ -3,7 +3,7 @@
  *
  *         The MIT License (MIT)
  *
- *      Copyright (c) 2016 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
+ *      Copyright (c) 2017 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
  *      Copyright (c) contributors
  *
  *
@@ -43,6 +43,13 @@ public interface ConfigBackend {
      * @param path Path to value
      */
     void setValueToPath(Object[] path, Object value);
+
+    /**
+     * Clear the path value.
+     *
+     * @param path Path.
+     */
+    void setClearPath(Object[] path);
 
     /**
      * Define new value

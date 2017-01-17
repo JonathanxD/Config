@@ -3,7 +3,7 @@
  *
  *         The MIT License (MIT)
  *
- *      Copyright (c) 2016 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
+ *      Copyright (c) 2017 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
  *      Copyright (c) contributors
  *
  *
@@ -49,6 +49,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -67,8 +68,13 @@ public class ConfigTest {
     }
 
     @Test
-    public void test() {
-        Config<ID> config = new Config<>(new MapBackend());
+    public void test() throws Throwable {
+        File filee = new File("/home/jonathan/workspace/Config/src/test/resources/yamllist.yml");
+
+        if(!filee.exists())
+            filee.createNewFile();
+
+        Config<ID> config = new Config<>(new YamlBackend(filee));
 
         Key<String> texto = config.createKey(String.class, config.getPath("TEXTO"), new ColorTransformer())
                 .setDefaultValue("&0Titulo &9- &7Bonito");
@@ -90,7 +96,9 @@ public class ConfigTest {
 
         Key<List<TimeSet>> timeSetList = config.createKey(new AbstractGenericRepresentation<List<TimeSet>>() {
         }, config.getPath("TODOS_TEMPOS"))
-                .setDefaultValue(Arrays.asList(new TimeSet(1, 5, 9), new TimeSet(7, 6, 5)));
+                .setDefaultValue(Collections.emptyList());
+
+        timeSetList.setValue(Arrays.asList(new TimeSet(1, 5, 9), new TimeSet(7, 6, 5)));
 
         assertEquals("[TimeSet[H=1, M=5, S=9], TimeSet[H=7, M=6, S=5]]", timeSetList.getValue().toString());
 
@@ -123,6 +131,7 @@ public class ConfigTest {
         JString convertedValue = nome.getConvertedValue(new Object[]{"nome", "Joao"});
 
         assertEquals("Olá Joao", convertedValue.toString());
+        config.getBackend().save();
 
 
         try {

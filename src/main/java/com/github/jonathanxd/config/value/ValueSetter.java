@@ -3,7 +3,7 @@
  *
  *         The MIT License (MIT)
  *
- *      Copyright (c) 2016 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
+ *      Copyright (c) 2017 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
  *      Copyright (c) contributors
  *
  *
@@ -56,27 +56,35 @@ public class ValueSetter {
     }
 
     public void setObjectValue(Path<?> path, Object value) {
-        if (!backend.isSupported(GenericRepresentation.aEnd(value.getClass()))) {
+        if (!this.backend.isSupported(GenericRepresentation.aEnd(value.getClass()))) {
             throw new IllegalArgumentException("Object '" + value + "' not supported!");
         }
 
-        backend.setValueToPath(path.getPath(), value);
+        this.backend.setValueToPath(path.getPath(), value);
+    }
+
+    public <T> void setClearValue(Key<T> key) {
+        this.setClearValue(key.createNode());
+    }
+
+    public void setClearValue(Node node) {
+        this.backend.setClearPath(node.getPath().getPath());
     }
 
     public <T> void setValue(Key<T> key, T value) {
-        setValue(key.createNode(), value, key.getTypeRepresentation(), key.getTransformers());
+        this.setValue(key.createNode(), value, key.getTypeRepresentation(), key.getTransformers());
     }
 
     public <T> void setValue(Node node, T value, GenericRepresentation<T> representation) {
-        serialize(node, value, representation, null);
+        this.serialize(node, value, representation, null);
     }
 
     public <T> void setValue(Node node, T value, GenericRepresentation<T> representation, List<Transformer<T>> transformers) {
-        serialize(node, value, representation, transformers);
+        this.serialize(node, value, representation, transformers);
     }
 
     public <T> void setValue(Node node, T value, GenericRepresentation<T> representation, Transformer<T> transformers) {
-        serialize(node, value, representation, Collections.singletonList(transformers));
+        this.serialize(node, value, representation, Collections.singletonList(transformers));
     }
 
     @SuppressWarnings("unchecked")
@@ -84,8 +92,8 @@ public class ValueSetter {
 
         value = transform(value, transformerList);
 
-        if (backend.isSupported(representation)) {
-            backend.setValueToPath(node.getPath().getPath(), value, representation);
+        if (this.backend.isSupported(representation)) {
+            this.backend.setValueToPath(node.getPath().getPath(), value, representation);
         } else {
             config.getSerializers().getRequiredSerializer(representation).serialize(value, node.createNewNode(config, node.getPath()), representation);
         }
