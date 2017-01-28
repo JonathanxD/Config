@@ -25,14 +25,33 @@
  *      OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *      THE SOFTWARE.
  */
-package com.github.jonathanxd.config.converter;
+package com.github.jonathanxd.config.serialize;
+
+import com.github.jonathanxd.config.Key;
+import com.github.jonathanxd.config.Storage;
 
 /**
- * Created by jonathan on 25/06/16.
+ * Object Serializer
+ *
+ * @param <T> Object type
  */
-public interface Converter<T, R> {
+public interface Serializer<T> {
 
-    R convert(T value, Object[] parameters);
+    /**
+     * Serialize object of type {@link T} to {@code key}.
+     *
+     * @param value   Object to serialize.
+     * @param key     Key to store serialized object.
+     * @param storage Current storage to push and fetch values safely.
+     */
+    void serialize(T value, Key<T> key, Storage storage);
 
-    T revertConversion(R converted, Object[] parameters);
+    /**
+     * Deserialize {@code key} to object of type {@link T}.
+     *
+     * @param key     Key to deserialize.
+     * @param storage Current storage to push and fetch values safely.
+     * @return Deserialized object of type {@link T}.
+     */
+    T deserialize(Key<T> key, Storage storage);
 }

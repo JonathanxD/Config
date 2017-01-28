@@ -25,41 +25,35 @@
  *      OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *      THE SOFTWARE.
  */
-package com.github.jonathanxd.config;
+package com.github.jonathanxd.config.backend;
 
-import com.github.jonathanxd.config.common.MapBackend;
-import com.github.jonathanxd.config.key.Key;
-
-import org.junit.Test;
+import java.util.Map;
 
 /**
- * Created by jonathan on 13/07/16.
+ * Backend, the backend is responsible to save and load the configuration.
  */
-public class EnumTest {
+public interface Backend {
 
-    @Test
-    public void test() {
-        Config<ID> config = new Config<>(new MapBackend());
+    /**
+     * Do the action, the action can be {@link Action#SAVE SAVE} or {@link Action#LOAD LOAD}.
+     *
+     * @param map    Mutable map to apply the action.
+     * @param action Action to apply to map.
+     */
+    void doAction(Map<String, Object> map, Action action);
 
+    /**
+     * Configuration action
+     */
+    enum Action {
+        /**
+         * Save the configuration map
+         */
+        SAVE,
 
-        Key<E> aa = config.createKey(E.class, config.getPath("AA"));
-
-
-        aa.setValue(E.K);
-
-        System.out.println(aa.getValue());
-
-        MapBackend.printMap((MapBackend) config.getBackend(), System.out::println);
-
+        /**
+         * Load the configuration map
+         */
+        LOAD
     }
-
-
-    enum ID {}
-
-    enum E {
-        T,
-        K,
-        Z
-    }
-
 }

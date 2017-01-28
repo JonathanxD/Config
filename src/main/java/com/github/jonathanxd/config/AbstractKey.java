@@ -25,17 +25,47 @@
  *      OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *      THE SOFTWARE.
  */
-package com.github.jonathanxd.config.serializer;
+package com.github.jonathanxd.config;
 
-import com.github.jonathanxd.config.key.Node;
-import com.github.jonathanxd.iutils.object.GenericRepresentation;
-import com.github.jonathanxd.iutils.object.TypeProvider;
+import com.github.jonathanxd.iutils.type.TypeInfo;
 
 /**
- * Created by jonathan on 24/06/16.
+ * Base {@link Key} class of all custom keys.
+ *
+ * @param <T> Type of the key value.
  */
-public interface Serializer<T> extends TypeProvider {
-    void serialize(T value, Node node, GenericRepresentation<?> representation);
+public abstract class AbstractKey<T> extends Key<T> {
 
-    T deserialize(Node node, GenericRepresentation<?> representation);
+    /**
+     * Creates a abstract key.
+     *
+     * @param config   Configuration.
+     * @param parent   Parent key.
+     * @param name     Name of this key.
+     * @param typeInfo Type information of the {@link T value type}.
+     * @param storage  Storage to push and fetch values.
+     */
+    public AbstractKey(Config config, Key<?> parent, String name, TypeInfo<T> typeInfo, Storage storage) {
+        super(config, parent, name, typeInfo, storage);
+    }
+
+    /**
+     * Basic implementation of {@link AbstractKey}
+     * @param <T> Type of value.
+     */
+    public static class Impl<T> extends AbstractKey<T> {
+
+        /**
+         * Creates a key.
+         *
+         * @param config   Configuration.
+         * @param parent   Parent key.
+         * @param name     Name of this key.
+         * @param typeInfo Type information of the {@link T value type}.
+         * @param storage  Storage to push and fetch values.
+         */
+        public Impl(Config config, Key<?> parent, String name, TypeInfo<T> typeInfo, Storage storage) {
+            super(config, parent, name, typeInfo, storage);
+        }
+    }
 }
