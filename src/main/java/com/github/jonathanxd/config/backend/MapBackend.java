@@ -25,33 +25,34 @@
  *      OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *      THE SOFTWARE.
  */
-package com.github.jonathanxd.config.serialize;
+package com.github.jonathanxd.config.backend;
 
-import com.github.jonathanxd.config.Key;
-import com.github.jonathanxd.config.Storage;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Object Serializer.
- *
- * @param <T> Object type.
+ * Backend that stores values in a map.
  */
-public interface Serializer<T> {
+public class MapBackend implements Backend {
 
-    /**
-     * Serialize object of type {@link T} to {@code key}.
-     *
-     * @param value   Object to serialize.
-     * @param key     Key to store serialized object.
-     * @param storage Current storage to push and fetch values safely.
-     */
-    void serialize(T value, Key<T> key, Storage storage);
+    private final Map<String, Object> backendMap = new HashMap<>();
 
-    /**
-     * Deserialize {@code key} to object of type {@link T}.
-     *
-     * @param key     Key to deserialize.
-     * @param storage Current storage to push and fetch values safely.
-     * @return Deserialized object of type {@link T}.
-     */
-    T deserialize(Key<T> key, Storage storage);
+    @Override
+    public void doAction(Map<String, Object> map, Action action) {
+        switch (action) {
+            case SAVE: {
+                this.backendMap.clear();
+                this.backendMap.putAll(map);
+                return;
+            }
+            case LOAD: {
+                map.clear();
+                map.putAll(this.backendMap);
+            }
+        }
+    }
+
+    public Map<String, Object> getBackendMap() {
+        return this.backendMap;
+    }
 }

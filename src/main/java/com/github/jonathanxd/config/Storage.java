@@ -27,6 +27,7 @@
  */
 package com.github.jonathanxd.config;
 
+import com.github.jonathanxd.config.backend.Backend;
 import com.github.jonathanxd.config.serialize.Serializers;
 import com.github.jonathanxd.iutils.container.MutableContainer;
 import com.github.jonathanxd.iutils.type.TypeInfo;
@@ -42,12 +43,12 @@ public abstract class Storage {
     /**
      * Stores the value linked to {@code key}.
      *
-     * Serialization is applied if a serializer of the provided {@code typeInfo} is registered
-     * in the {@link #getConfig() config} or in {@link Serializers#GLOBAL Global serializers}.
+     * Serialization is applied if a serializer of the provided {@code typeInfo} is registered in
+     * the {@link #getConfig() config} or in {@link Serializers#GLOBAL Global serializers}.
      *
-     * @param key   Key.
-     *              @param typeInfo Type information to find serializer.
-     * @param value Value to store.
+     * @param key      Key.
+     * @param typeInfo Type information to find serializer.
+     * @param value    Value to store.
      */
     @SuppressWarnings("unchecked")
     public final void store(Key<?> key, TypeInfo<?> typeInfo, Object value) {
@@ -58,6 +59,12 @@ public abstract class Storage {
         if (b) {
             serializers.serializeUnchecked(value, key, typeInfo);
         } else {
+            Backend backend = key.getConfig().getBackend();
+
+            if (!backend.supports(typeInfo))
+                throw new IllegalArgumentException("Invalid storage of key '" + key + "'. Type '" +
+                        typeInfo + "' is not supported by backend '" + backend + "'");
+
             this.pushValue(key, value);
         }
     }
@@ -65,12 +72,11 @@ public abstract class Storage {
     /**
      * Fetches the value linked to {@code key}.
      *
-     * Deserialization is applied if a serializer of the provided {@code typeInfo} is
-     * registered in the {@link #getConfig() config} or in {@link Serializers#GLOBAL Global
-     * serializers}.
+     * Deserialization is applied if a serializer of the provided {@code typeInfo} is registered in
+     * the {@link #getConfig() config} or in {@link Serializers#GLOBAL Global serializers}.
      *
-     * @param key Key.
-     *            @param typeInfo Type info.
+     * @param key      Key.
+     * @param typeInfo Type info.
      * @return Value linked to {@code key}.
      */
     public final Object get(Key<?> key, TypeInfo<?> typeInfo) {
@@ -264,8 +270,8 @@ public abstract class Storage {
     }
 
     /**
-     * Storage that push and fetch values from a {@link MutableContainer container}, this storage also
-     * returns null if the value is a empty map.
+     * Storage that push and fetch values from a {@link MutableContainer container}, this storage
+     * also returns null if the value is a empty map.
      */
     public static class CommonStorage extends Storage {
         /**
@@ -298,8 +304,8 @@ public abstract class Storage {
         public Object fetchValue(Key<?> key) {
             Object o = this.container.get();
 
-            if(o instanceof Map<?, ?>)
-                if(((Map) o).isEmpty())
+            if (o instanceof Map<?, ?>)
+                if (((Map) o).isEmpty())
                     return null;
 
             return o;

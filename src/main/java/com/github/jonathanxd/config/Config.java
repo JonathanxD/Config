@@ -47,7 +47,7 @@ public class Config {
     /**
      * Root Map type.
      */
-    private static final TypeInfo<Map<String, Object>> TYPE = TypeInfo.a(Map.class).of(String.class, Object.class).buildGeneric();
+    private static final TypeInfo<Map<String, Object>> TYPE = TypeInfo.builderOf(Map.class).of(String.class, Object.class).buildGeneric();
 
     /**
      * Root map
@@ -76,6 +76,15 @@ public class Config {
      */
     public Config(Backend backend) {
         this.backend = backend;
+    }
+
+    /**
+     * Gets the config backend.
+     *
+     * @return Config backend.
+     */
+    public Backend getBackend() {
+        return this.backend;
     }
 
     /**

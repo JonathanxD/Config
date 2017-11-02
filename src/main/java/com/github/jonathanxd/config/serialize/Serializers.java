@@ -49,7 +49,7 @@ public final class Serializers {
     public static final Serializers GLOBAL = new Serializers();
 
     static {
-        Serializers.GLOBAL.register(TypeInfo.aEnd(List.class), new ListSerializer());
+        Serializers.GLOBAL.register(TypeInfo.of(List.class), new ListSerializer());
     }
 
     /**
@@ -66,7 +66,8 @@ public final class Serializers {
      * otherwise.
      */
     public boolean hasSerializer(TypeInfo<?> typeInfo) {
-        return this.findSerializer(typeInfo).isPresent() || (this != Serializers.GLOBAL && Serializers.GLOBAL.hasSerializer(typeInfo));
+        return this.findSerializer(typeInfo).isPresent()
+                || (this != Serializers.GLOBAL && Serializers.GLOBAL.hasSerializer(typeInfo));
     }
 
     /**
@@ -78,7 +79,9 @@ public final class Serializers {
      */
     @SuppressWarnings("unchecked")
     public <T> void serialize(T value, Key<T> key) {
-        this.findSerializer(key.getTypeInfo()).orElseThrow(NullPointerException::new).serialize(value, key, key.getStorage());
+        this.findSerializer(key.getTypeInfo())
+                .orElseThrow(() -> missingSerializer(key))
+                .serialize(value, key, key.getStorage());
     }
 
     /**
@@ -100,7 +103,9 @@ public final class Serializers {
      */
     @SuppressWarnings("unchecked")
     public void serializeUnchecked(Object value, Key<?> key, TypeInfo<?> typeInfo) {
-        ((Serializer<Object>) this.findSerializer(typeInfo).orElseThrow(NullPointerException::new)).serialize(value, (Key<Object>) key, key.getStorage());
+        ((Serializer<Object>) this.findSerializer(typeInfo)
+                .orElseThrow(() -> missingSerializer(key, typeInfo)))
+                .serialize(value, (Key<Object>) key, key.getStorage());
     }
 
     /**
@@ -112,7 +117,9 @@ public final class Serializers {
      */
     @SuppressWarnings("unchecked")
     public <T> T deserialize(Key<T> key) {
-        return this.findSerializer(key.getTypeInfo()).orElseThrow(NullPointerException::new).deserialize(key, key.getStorage());
+        return this.findSerializer(key.getTypeInfo())
+                .orElseThrow(() -> missingSerializer(key))
+                .deserialize(key, key.getStorage());
     }
 
     /**
@@ -124,7 +131,9 @@ public final class Serializers {
      */
     @SuppressWarnings("unchecked")
     public <T> Object deserializeUnchecked(Key<?> key, TypeInfo<?> typeInfo) {
-        return this.findSerializer((TypeInfo<T>) typeInfo).orElseThrow(NullPointerException::new).deserialize((Key<T>) key, key.getStorage());
+        return this.findSerializer((TypeInfo<T>) typeInfo)
+                .orElseThrow(() -> missingSerializer(key, typeInfo))
+                .deserialize((Key<T>) key, key.getStorage());
     }
 
     /**
@@ -151,10 +160,10 @@ public final class Serializers {
         if (typeInfo == null)
             return Optional.empty();
 
-        Class<? extends T> aClass = typeInfo.getAClass();
+        Class<? extends T> aClass = typeInfo.getTypeClass();
 
         if (aClass.getTypeParameters().length > 0) {
-            TypeInfo<? extends T> info = TypeInfo.aEnd(aClass);
+            TypeInfo<? extends T> info = TypeInfo.of(aClass);
 
             if (this.getSerializerMap().containsKey(info))
                 return Optional.of((Serializer<T>) this.serializerMap.get(info));
@@ -172,6 +181,27 @@ public final class Serializers {
             return Serializers.GLOBAL.findSerializer(typeInfo);
 
         return Optional.empty();
+    }
+
+    /**
+     * Create exception of missing serializer of {@code key}.
+     *
+     * @param key Key which serializer is not present.
+     * @return Serializer Exception.
+     */
+    private RuntimeException missingSerializer(Key<?> key) {
+        throw new IllegalStateException("Missing serializer of key '" + key + "' of type '" + key.getTypeInfo() + "'!");
+    }
+
+    /**
+     * Create exception of missing serializer of {@code key} of {@code type}.
+     *
+     * @param key  Key which serializer is not present.
+     * @param type Type of missing serializer.
+     * @return Serializer Exception.
+     */
+    private RuntimeException missingSerializer(Key<?> key, TypeInfo<?> type) {
+        throw new IllegalStateException("Missing serializer of key '" + key + "' of type '" + type + "'!");
     }
 
     /**
@@ -197,7 +227,7 @@ public final class Serializers {
             if (related.length > 0) {
                 elementType = related[0];
             } else {
-                elementType = TypeInfo.aEnd(Object.class);
+                elementType = TypeInfo.of(Object.class);
             }
 
             List<Map<String, Object>> list = new ArrayList<>();
@@ -206,15 +236,11 @@ public final class Serializers {
             Map<String, Object> map = new HashMap<>();
 
             for (Object o : value) {
-
-
                 Storage newStorage = new Storage.MapStorage(key.getConfig(), map);
 
                 Key<?> newKey = new AbstractKey.Impl<>(key.getConfig(), key.getParent(), key.getName(), elementType, newStorage);
+                ((Key<Object>) newKey).setValue(o);
 
-                key.getConfig().getSerializers().serializeUnchecked(o, newKey);
-
-                //list.add(map);
             }
 
             list.add(map);
@@ -230,7 +256,7 @@ public final class Serializers {
 
             List result = new ArrayList();
 
-            if(value instanceof List) {
+            if (value instanceof List) {
                 TypeInfo[] related = key.getTypeInfo().getRelated();
 
                 TypeInfo<?> elementType;
@@ -238,19 +264,19 @@ public final class Serializers {
                 if (related.length > 0) {
                     elementType = related[0];
                 } else {
-                    elementType = TypeInfo.aEnd(Object.class);
+                    elementType = TypeInfo.of(Object.class);
                 }
 
                 List list = (List) value;
 
                 Object at0;
-                if(list.size() == 1 && (at0 = list.get(0)) instanceof Map<?, ?>) {
+                if (list.size() == 1 && (at0 = list.get(0)) instanceof Map<?, ?>) {
                     Map<String, Object> map = (Map<String, Object>) at0;
 
 
                     //
 
-                    if(!map.isEmpty()) {
+                    if (!map.isEmpty()) {
                         Storage newStorage = new Storage.MapStorage(key.getConfig(), map);
 
                         Key<?> newKey = new AbstractKey.Impl<>(key.getConfig(), key.getParent(), key.getName(), elementType, newStorage);

@@ -27,6 +27,7 @@
  */
 package com.github.jonathanxd.config;
 
+import com.github.jonathanxd.iutils.string.ToStringHelper;
 import com.github.jonathanxd.iutils.type.TypeInfo;
 
 /**

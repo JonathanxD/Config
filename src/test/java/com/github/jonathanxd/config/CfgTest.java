@@ -27,13 +27,21 @@
  */
 package com.github.jonathanxd.config;
 
+import com.github.jonathanxd.config.backend.Backend;
+import com.github.jonathanxd.config.backend.FunctionBackend;
 import com.github.jonathanxd.config.serialize.Serializer;
 import com.github.jonathanxd.config.serialize.Serializers;
+import com.github.jonathanxd.iutils.box.MutableBox;
+import com.github.jonathanxd.iutils.map.MapUtils;
+import com.github.jonathanxd.iutils.object.Pairs;
 import com.github.jonathanxd.iutils.type.TypeInfo;
 
+import org.junit.Assert;
 import org.junit.Test;
+import org.yaml.snakeyaml.Yaml;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.UnaryOperator;
@@ -48,7 +56,7 @@ public class CfgTest {
 
         Key<Map<String, Object>> rootKey = config.getRootKey();
 
-        Key<String> name = rootKey.getKey("name", TypeInfo.aEnd(String.class)).getKey("n", String.class);
+        Key<String> name = rootKey.getKey("name", TypeInfo.of(String.class)).getKey("n", String.class);
 
 
         System.out.println(name.getValue());
@@ -62,7 +70,7 @@ public class CfgTest {
 
         System.out.println(value);
 
-        Key<List<Member>> members = rootKey.getKey("members", TypeInfo.a(List.class).of(Member.class).buildGeneric());
+        Key<List<Member>> members = rootKey.getKey("members", TypeInfo.builderOf(List.class).of(Member.class).buildGeneric());
 
         members.setValue(new ArrayList<>());
 
@@ -71,7 +79,7 @@ public class CfgTest {
         memberList.add(new Member("Jorge", 32));
         memberList.add(new Member("Maria", 25));
 
-        Serializers.GLOBAL.register(TypeInfo.aEnd(Member.class), new MemberSerializer());
+        Serializers.GLOBAL.register(TypeInfo.of(Member.class), new MemberSerializer());
 
         members.setValue(memberList);
 
@@ -80,8 +88,100 @@ public class CfgTest {
         List<Member> memberList2 = members.getValue();
 
         System.out.println(memberList);
+        System.out.println(memberList2);
     }
 
+    @Test
+    public void testMap() {
+        Config config = new Config((map, action) -> {
+            System.out.println("Map = "+map+"                  [action="+action+"]");
+        });
+
+        Key<Map<String, Object>> rootKey = config.getRootKey();
+
+        Map<String, String> mapi = new HashMap<>();
+
+        mapi.put("Name", "Machine");
+        mapi.put("Id", "game:machine");
+
+        Key<Map<String, String>> players =
+                rootKey.getKey("players", TypeInfo.builderOf(Map.class).of(String.class, String.class).buildGeneric());
+
+        players.setValue(mapi);
+
+        List<Map<String, String>> mapList = new ArrayList<>();
+
+        //noinspection unchecked
+        mapList.add(MapUtils.mapFromPairs(Pairs.of("Name", "RN"), Pairs.of("Id", "game:rn")));
+
+
+        Key<List<Map<String, String>>> oops = rootKey.getKey("oops", TypeInfo.builderOf(List.class)
+                .of(TypeInfo.builderOf(Map.class).of(String.class, String.class)).buildGeneric());
+
+        oops.setValue(mapList);
+
+        config.save();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void yamlTest() {
+        Yaml yaml = new Yaml();
+        MutableBox<String> yamlStr = new MutableBox<>("");
+
+        Config config = new Config(
+                new FunctionBackend(map -> {
+                    yamlStr.set(yaml.dump(map));
+                    System.out.println("Yaml = "+yamlStr.get()+"                  [action=SAVE]");
+                }, () -> (Map<String, Object>) yaml.load(yamlStr.get())));
+
+        Key<Map<String, Object>> rootKey = config.getRootKey();
+
+        Map<String, String> mapi = new HashMap<>();
+
+        mapi.put("Name", "Machine");
+        mapi.put("Id", "game:machine");
+
+        Key<Map<String, String>> players =
+                rootKey.getKey("players", TypeInfo.builderOf(Map.class).of(String.class, String.class).buildGeneric());
+
+        players.setValue(mapi);
+
+        List<Map<String, String>> mapList = new ArrayList<>();
+
+        //noinspection unchecked
+        mapList.add(MapUtils.mapFromPairs(Pairs.of("Name", "RN"), Pairs.of("Id", "game:rn")));
+
+
+        Key<List<Map<String, String>>> oops = rootKey.getKey("oops", TypeInfo.builderOf(List.class)
+                .of(TypeInfo.builderOf(Map.class).of(String.class, String.class)).buildGeneric());
+
+        oops.setValue(mapList);
+
+        config.save();
+
+        String save1 = yamlStr.get();
+
+        config.load();
+
+        config.save();
+
+        String save2 = yamlStr.get();
+
+        Assert.assertEquals(save1, save2);
+
+        System.out.println("==========================================");
+        System.out.println("First save: ");
+        System.out.println("==========================================");
+        System.out.println(save1);
+        System.out.println("/==========================================/");
+
+        System.out.println("==========================================");
+        System.out.println("Second save: ");
+        System.out.println("==========================================");
+        System.out.println(save2);
+        System.out.println("/==========================================/");
+    }
 
     public static class MemberSerializer implements Serializer<Member> {
 

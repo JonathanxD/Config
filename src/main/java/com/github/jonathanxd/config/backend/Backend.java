@@ -27,6 +27,10 @@
  */
 package com.github.jonathanxd.config.backend;
 
+import com.github.jonathanxd.config.CommonTypes;
+import com.github.jonathanxd.iutils.type.TypeInfo;
+
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -35,12 +39,30 @@ import java.util.Map;
 public interface Backend {
 
     /**
-     * Do the action, the action can be {@link Action#SAVE SAVE} or {@link Action#LOAD LOAD}.
+     * Do save or load action.
      *
      * @param map    Mutable map to apply the action.
      * @param action Action to apply to map.
      */
     void doAction(Map<String, Object> map, Action action);
+
+    /**
+     * Returns true if this backed supports object of {@code type} without serialization.
+     *
+     * By default, all values will be serialized if there is a serializer registered, if no one
+     * serializer of {@code type} is registered, then the frontend will call this method to check if
+     * it can be inserted inside the {@link com.github.jonathanxd.config.Storage}, if not, it will
+     * thrown an exception.
+     *
+     * Default implementation always returns true for: {@code primitive types}, {@link String},
+     * {@link Map} and {@link List} of any of valid types.
+     *
+     * @param type Type to check if this backend supports.
+     * @return True if this backed supports object of {@code type} without serialization.
+     */
+    default boolean supports(TypeInfo<?> type) {
+        return CommonTypes.isValidBasicType(type);
+    }
 
     /**
      * Configuration action

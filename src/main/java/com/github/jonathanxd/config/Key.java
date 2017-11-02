@@ -27,10 +27,12 @@
  */
 package com.github.jonathanxd.config;
 
+import com.github.jonathanxd.iutils.string.ToStringHelper;
 import com.github.jonathanxd.iutils.type.TypeInfo;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * A config key, the {@link Key key} fetches and pushes the value to the {@link Storage storage} and
@@ -57,6 +59,28 @@ public class Key<T> {
     }
 
     /**
+     * Used to get class simple name including its enclosing class name.
+     *
+     * @param aClass Class.
+     * @return Simple class name including enclosing class name.
+     */
+    private static String getClassName(Class<?> aClass) {
+
+        StringBuilder sb = new StringBuilder();
+
+        Class<?> enclosing = aClass;
+
+        while ((enclosing = enclosing.getEnclosingClass()) != null) {
+            sb.append(enclosing.getSimpleName());
+            sb.append('.');
+        }
+
+        sb.append(aClass.getSimpleName());
+
+        return sb.toString();
+    }
+
+    /**
      * Creates a new {@link Key key} of type {@link V} linked to a {@link Storage storage}, this
      * child key overwrite the current value.
      *
@@ -67,7 +91,7 @@ public class Key<T> {
      * values to {@link Storage storage} of {@code this} {@link Key key}.
      */
     public <V> Key<V> getKey(String name, Class<V> type) {
-        return this.getKey(name, TypeInfo.aEnd(type));
+        return this.getKey(name, TypeInfo.of(type));
     }
 
     /**
@@ -86,7 +110,7 @@ public class Key<T> {
 
         Object o = this.getStorage().fetchValue(this);
 
-        if(o instanceof Map<?, ?>)
+        if (o instanceof Map<?, ?>)
             map = (Map<String, Object>) o;
         else
             map = new HashMap<>();
@@ -160,5 +184,17 @@ public class Key<T> {
      */
     public Storage getStorage() {
         return this.storage;
+    }
+
+    @Override
+    public String toString() {
+
+        return ToStringHelper.defaultHelper(Key.getClassName(this.getClass()))
+                .add("name", this.getName())
+                .add("type", this.getTypeInfo())
+                .add("storage", this.getStorage())
+                .add("config", this.getConfig())
+                .addOptional("parent", Optional.ofNullable(this.getParent()).map(Object::toString))
+                .toString();
     }
 }

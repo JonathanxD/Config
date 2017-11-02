@@ -25,33 +25,43 @@
  *      OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *      THE SOFTWARE.
  */
-package com.github.jonathanxd.config.serialize;
+package com.github.jonathanxd.config.backend;
 
-import com.github.jonathanxd.config.Key;
-import com.github.jonathanxd.config.Storage;
+import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
- * Object Serializer.
- *
- * @param <T> Object type.
+ * Backend that delegates save and load to {@link Consumer} and {@link Supplier}.
  */
-public interface Serializer<T> {
+public class FunctionBackend implements Backend {
+    private final Consumer<Map<String, Object>> saver;
+    private final Supplier<Map<String, Object>> loader;
 
-    /**
-     * Serialize object of type {@link T} to {@code key}.
-     *
-     * @param value   Object to serialize.
-     * @param key     Key to store serialized object.
-     * @param storage Current storage to push and fetch values safely.
-     */
-    void serialize(T value, Key<T> key, Storage storage);
+    public FunctionBackend(Consumer<Map<String, Object>> saver, Supplier<Map<String, Object>> loader) {
+        this.saver = saver;
+        this.loader = loader;
+    }
 
-    /**
-     * Deserialize {@code key} to object of type {@link T}.
-     *
-     * @param key     Key to deserialize.
-     * @param storage Current storage to push and fetch values safely.
-     * @return Deserialized object of type {@link T}.
-     */
-    T deserialize(Key<T> key, Storage storage);
+    public Consumer<Map<String, Object>> getSaver() {
+        return this.saver;
+    }
+
+    public Supplier<Map<String, Object>> getLoader() {
+        return this.loader;
+    }
+
+    @Override
+    public void doAction(Map<String, Object> map, Action action) {
+        switch (action) {
+            case SAVE: {
+                this.getSaver().accept(map);
+                return;
+            }
+            case LOAD: {
+                map.clear();
+                map.putAll(this.getLoader().get());
+            }
+        }
+    }
 }
