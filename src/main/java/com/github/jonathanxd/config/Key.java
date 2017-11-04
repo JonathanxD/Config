@@ -58,6 +58,9 @@ import java.util.Optional;
  * and pushing. Query and set methods can throw exceptions if there is no serialize for key type and
  * the key type is not supported by {@link com.github.jonathanxd.config.backend.Backend}.
  *
+ * Keys are identified by {@link #getConfig() config}, {@link #getParent() parent key} and {@link
+ * #getName() key name}.
+ *
  * @param <T> Value type.
  * @see Storage
  */
