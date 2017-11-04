@@ -225,6 +225,19 @@ public class Key<T> {
     }
 
     /**
+     * Gets the children key that {@code keySpec} specifies. This method ignores the {@link
+     * TypeInfo} of {@code keySpec}.
+     *
+     * @param keySpec  Key specification.
+     * @param typeInfo Type info to use to get children key.
+     * @param <V>      Type of key value.
+     * @return Children key that {@code keySpec} specifies.
+     */
+    public <V> Key<V> get(KeySpec<?> keySpec, TypeInfo<V> typeInfo) {
+        return keySpec.get(this, typeInfo);
+    }
+
+    /**
      * Creates a new {@link Key key} of type {@link V} linked to a {@link Storage storage}, this
      * child key overwrite the current value.
      *

@@ -109,12 +109,25 @@ public final class KeySpec<T> {
     }
 
     /**
-     * Keys the children key of {@code parent} key that this instance specifies.
+     * Gets the children key of {@code parent} key that this instance specifies.
      *
      * @param parent Parent key to get children key.
      * @return Children key of {@code parent} key that this instance specifies.
      */
     public Key<T> get(Key<?> parent) {
         return parent.getKey(this.getName(), this.getType());
+    }
+
+    /**
+     * Gets the children key of {@code parent} key that this instance specifies.
+     *
+     * This method ignores the type info of this specification.
+     *
+     * @param parent   Parent key to get children key.
+     * @param typeInfo Type info to use to get key.
+     * @return Children key of {@code parent} key that this instance specifies.
+     */
+    public <U> Key<U> get(Key<?> parent, TypeInfo<U> typeInfo) {
+        return parent.getKey(this.getName(), typeInfo);
     }
 }
