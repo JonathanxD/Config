@@ -299,8 +299,8 @@ public final class Serializers {
             Storage newStorage = Storage.createMapStorage(key, temp);
 
             for (Map.Entry<?, ?> o : ((Map<?, ?>) value).entrySet()) {
-                Key<?> vKey = Key.createKey(key, keyType, newStorage);
-                Key<?> vValue = Key.createKey(key, valueType, newStorage);
+                Key<?> vKey = key.getAs(keyType, newStorage);
+                Key<?> vValue = key.getAs(valueType, newStorage);
 
                 Object serializedKey = serializers.serializeUncheckedAndGet(o.getKey(), vKey);
                 temp.clear();
@@ -329,8 +329,8 @@ public final class Serializers {
                 Storage newStorage = Storage.createMapStorage(key);
 
                 for (Map.Entry<?, ?> o : ((Map<?, ?>) value).entrySet()) {
-                    Key<?> vKey = Key.createKey(key, keyType, newStorage);
-                    Key<?> vValue = Key.createKey(key, valueType, newStorage);
+                    Key<?> vKey = key.getAs(keyType, newStorage);
+                    Key<?> vValue = key.getAs(valueType, newStorage);
 
                     newStorage.pushValue(vKey, o.getKey());
 
@@ -361,7 +361,7 @@ public final class Serializers {
             Storage newStorage = Storage.createListStorage(key);
 
             for (Object o : value) {
-                Key<?> newKey = Key.createKey(key, elementType, newStorage);
+                Key<?> newKey = key.getAs(elementType, newStorage);
 
                 serializers.serializeUncheckedAndGet(o, newKey);
             }
@@ -382,7 +382,7 @@ public final class Serializers {
                 Storage listStorage = Storage.createListStorage(key);
 
                 for (Object o : list) {
-                    Key<?> newKey = Key.createKey(key, elementType, listStorage);
+                    Key<?> newKey = key.getAs(elementType, listStorage);
 
                     listStorage.pushValue(newKey, o);
 

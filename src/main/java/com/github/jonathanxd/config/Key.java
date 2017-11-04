@@ -32,6 +32,7 @@ import com.github.jonathanxd.iutils.type.TypeInfo;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -56,9 +57,6 @@ import java.util.Optional;
  * deserialize value. The deserialization/serialization is called internally, during value fetching
  * and pushing. Query and set methods can throw exceptions if there is no serialize for key type and
  * the key type is not supported by {@link com.github.jonathanxd.config.backend.Backend}.
- *
- * Implementations must not implement {@link #hashCode()} and {@link #equals(Object)}, implementing
- * them may lead to unpredictable behavior.
  *
  * @param <T> Value type.
  * @see Storage
@@ -85,6 +83,8 @@ public class Key<T> {
      * Creates a new configuration key for {@code config} with {@code name} that stores/fetches
      * values in/from {@code storage}.
      *
+     * Private since {@code 2.2}.
+     *
      * @param config   Configuration.
      * @param parent   Parent key.
      * @param name     Name of the key entry in {@code storage}.
@@ -95,7 +95,7 @@ public class Key<T> {
      * @param <T>      Type of the key.
      * @return Configuration key that stores/fetches values in/from {@code storage}.
      */
-    public static <T> Key<T> createKey(Config config, Key<?> parent, String name, TypeInfo<T> type, Storage storage, Key<?> original) {
+    private static <T> Key<T> createKey(Config config, Key<?> parent, String name, TypeInfo<T> type, Storage storage, Key<?> original) {
         return new AbstractKey.Impl<>(config, parent, name, type, storage, original);
     }
 
@@ -108,13 +108,16 @@ public class Key<T> {
      * allowing key-value pair to be stored in alternative {@code storage} before it is added into
      * {@link Key#getConfig() base key config} storage.
      *
+     * Since {@code 2.2}, you should use {@link Key#getAs(TypeInfo)} and {@link Key#getAs(TypeInfo,
+     * Storage)} instead.
+     *
      * @param base    Base key.
      * @param type    Type of the new key.
      * @param storage Storage where key and key value resides.
      * @param <T>     Type of the new key.
      * @return Emulated key based on {@code base}.
      */
-    public static <T> Key<T> createKey(Key<?> base, TypeInfo<T> type, Storage storage) {
+    private static <T> Key<T> createKey(Key<?> base, TypeInfo<T> type, Storage storage) {
         return Key.createKey(base.getConfig(), base.getParent(), base.getName(), type, storage, base);
     }
 
@@ -156,6 +159,30 @@ public class Key<T> {
         sb.append(aClass.getSimpleName());
 
         return sb.toString();
+    }
+
+    /**
+     * Gets this key as a get of another type.
+     *
+     * @param type New type.
+     * @param <V>  New type.
+     * @return A new emulated key that emulates this key with different type.
+     */
+    public <V> Key<V> getAs(TypeInfo<V> type) {
+        return Key.createKey(this, type, this.getStorage());
+    }
+
+    /**
+     * Gets this key as a get of another type that stores values in alternative {@code storage}.
+     *
+     * @param type    New type.
+     * @param storage New storage.
+     * @param <V>     New type.
+     * @return A new emulated key that emulates this key with different type that stores values in
+     * alternative {@code storage}.
+     */
+    public <V> Key<V> getAs(TypeInfo<V> type, Storage storage) {
+        return Key.createKey(this, type, storage);
     }
 
     /**
@@ -329,6 +356,23 @@ public class Key<T> {
      */
     public boolean isEmulated() {
         return this.getOriginalKey() != null;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.getConfig(), this.getParent(), this.getName());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Key<?>))
+            return super.equals(obj);
+
+        Key<?> other = (Key<?>) obj;
+
+        return Objects.equals(this.getConfig(), other.getConfig())
+                && Objects.equals(this.getParent(), other.getParent())
+                && Objects.equals(this.getName(), other.getName());
     }
 
     @Override

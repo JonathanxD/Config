@@ -34,10 +34,6 @@ import com.github.jonathanxd.iutils.type.TypeInfo;
 /**
  * Serializer, transform objects into configuration values and configuration values into objects.
  *
- * The serializer implementation should take care about {@link Key#isEmulated() emulated keys}.
- * Values of these keys cannot be retrieved from the {@link Storage storage} of the {@link
- * Key#getParent() parent key} of them.
- *
  * @param <T> Object type.
  * @see Key
  */
