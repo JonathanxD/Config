@@ -4,18 +4,14 @@ plugins {
 }
 
 group 'com.github.jonathanxd'
-version '2.0-SNAPSHOT'
 
-allprojects {
-    apply plugin: 'idea'
-    apply plugin: 'java'
-    apply plugin: 'license'
-    apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'idea'
+apply plugin: 'java'
+apply plugin: 'license'
+apply plugin: 'com.github.johnrengelman.shadow'
 
-    license {
-        header rootProject.file("LICENSE_HEADER")
-    }
-
+license {
+    header rootProject.file("LICENSE_HEADER")
 }
 
 defaultTasks 'licenseFormat', 'build', 'test', 'jar', 'shadowJar'
@@ -28,94 +24,64 @@ ext {
     description = "Configuration API."
 }
 
-subprojects {
-
-    shadowJar {
-        dependencies {
-            include(project(rootProject.getPath()))
-        }
-    }
+repositories {
+    mavenCentral()
+    maven { url "https://jitpack.io" }
 }
 
-allprojects {
-    repositories {
-        mavenCentral()
-        maven { url "https://jitpack.io" }
-        maven { url "http://oss.sonatype.org/content/groups/public/" }
-    }
-}
-
-allprojects {
-    dependencies {
-        compile 'org.yaml:snakeyaml:1.9'
-        compile 'com.github.JonathanxD:JwIUtils:4.7.14'
-        testCompile "junit:junit:4.12"
-    }
-
+dependencies {
+    compile 'com.github.JonathanxD:JwIUtils:4.8.1.1'
+    testCompile 'org.yaml:snakeyaml:1.9'
+    testCompile "junit:junit:4.12"
 }
 
 // Tasks
-allprojects {
-    jar {
-        from "$rootProject.rootDir/LICENSE"
+jar {
+    from "$rootProject.rootDir/LICENSE"
 
-        manifest {
-            attributes 'Implementation-Title': baseName,
-                    'Implementation-Version': version
-        }
-    }
-
-    task sourcesJar(type: Jar, dependsOn: classes) {
-        classifier = 'sources'
-        from sourceSets.main.allSource
-    }
-
-    task javadocJar(type: Jar, dependsOn: javadoc) {
-        classifier = 'javadoc'
-        from javadoc.destinationDir
-    }
-
-    artifacts {
-        archives sourcesJar
-        archives javadocJar
+    manifest {
+        attributes 'Implementation-Title': baseName,
+                'Implementation-Version': version
     }
 }
 
-subprojects {
-
-    dependencies {
-        compile rootProject
-        testCompile rootProject.sourceSets.test.output
-    }
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
 }
 
-allprojects{
-    license {
-        String name = project.getName()
-        String description = project.ext.description
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
 
-        ext.name = "$name"
-        ext.organization = 'TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/)'
-        ext.description = "$description"
-        ext.url = "https://github.com/JonathanxD/$name"
-        ext.year = Calendar.getInstance().get(Calendar.YEAR)
-        ext.email = 'jonathan.scripter@programmer.net'
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
 
-        exclude "**/*.info"
-        exclude "**/*.md"
-        exclude "res/**"
-        exclude "src/main/resources/**"
-        exclude "src/test/resources/**"
+license {
+    ext.name = project.name
+    ext.organization = project.organization
+    ext.description = project.description
+    ext.url = "https://github.com/JonathanxD/Config"
+    ext.year = Calendar.getInstance().get(Calendar.YEAR)
+    ext.email = 'jonathan.scripter@programmer.net'
 
-        header rootProject.file('LICENSE_HEADER')
+    exclude "**/*.info"
+    exclude "**/*.md"
+    exclude "res/**"
+    exclude "src/main/resources/**"
+    exclude "src/test/resources/**"
 
-        sourceSets = project.sourceSets
+    header rootProject.file('LICENSE_HEADER')
 
-        ignoreFailures false
-        strictCheck true
+    sourceSets = project.sourceSets
 
-        mapping {
-            java = 'SLASHSTAR_STYLE'
-        }
+    ignoreFailures false
+    strictCheck true
+
+    mapping {
+        java = 'SLASHSTAR_STYLE'
     }
 }

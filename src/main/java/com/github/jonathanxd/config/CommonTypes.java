@@ -1,9 +1,9 @@
 /*
- *      Config - Configuration API. <https://github.com/JonathanxD/Config>
+ *      Config - Configuration library <https://github.com/JonathanxD/Config>
  *
  *         The MIT License (MIT)
  *
- *      Copyright (c) 2017 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
+ *      Copyright (c) 2017 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/) <jonathan.scripter@programmer.net>
  *      Copyright (c) contributors
  *
  *
@@ -27,9 +27,10 @@
  */
 package com.github.jonathanxd.config;
 
+import com.github.jonathanxd.iutils.collection.Collections3;
 import com.github.jonathanxd.iutils.type.TypeInfo;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -64,6 +65,18 @@ public class CommonTypes {
     public static final TypeInfo<Map> MAP = TypeInfo.of(Map.class);
     public static final TypeInfo<List> LIST = TypeInfo.of(List.class);
 
+    public static final List<TypeInfo<?>> ALL = Collections.unmodifiableList(Collections3.listOf(
+            BOXED_BOOLEAN, BOOLEAN,
+            BYTE, BOXED_BYTE,
+            SHORT, BOXED_SHORT,
+            CHAR, BOXED_CHAR,
+            INTEGER, BOXED_INTEGER,
+            FLOAT, BOXED_FLOAT,
+            LONG, BOXED_LONG,
+            DOUBLE, BOXED_DOUBLE,
+            /*OBJECT, */STRING
+    ));
+
     public static boolean isValidBasicType(TypeInfo<?> type) {
         return type.isAssignableFrom(BOXED_BOOLEAN)
                 || type.isAssignableFrom(BOXED_BYTE)
@@ -91,11 +104,11 @@ public class CommonTypes {
 
     public static boolean isValidMap(TypeInfo<?> map) {
         return map.getTypeClass() == MAP.getTypeClass()
-                && Arrays.stream(map.getRelated()).allMatch(CommonTypes::isValidBasicType);
+                && map.getTypeParameters().stream().allMatch(CommonTypes::isValidBasicType);
     }
 
     public static boolean isValidList(TypeInfo<?> list) {
         return list.getTypeClass() == LIST.getTypeClass()
-                && Arrays.stream(list.getRelated()).allMatch(CommonTypes::isValidBasicType);
+                && list.getTypeParameters().stream().allMatch(CommonTypes::isValidBasicType);
     }
 }

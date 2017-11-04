@@ -1,5 +1,5 @@
 /*
- *      Config - Configuration library <https://github.com/JonathanxD/Config>
+ *      Config-Yaml - Yaml backend for Config <https://github.com/JonathanxD/Config/>
  *
  *         The MIT License (MIT)
  *
@@ -25,39 +25,40 @@
  *      OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *      THE SOFTWARE.
  */
-package com.github.jonathanxd.config.backend;
+package com.github.jonathanxd.config.backend.yaml;
 
-import java.util.Map;
-import java.util.function.Consumer;
+import com.github.jonathanxd.iutils.function.checked.supplier.ESupplier;
+
+import org.yaml.snakeyaml.Yaml;
+
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.function.Supplier;
 
 /**
- * Backend that delegates save and load to {@link Consumer} and {@link Supplier}.
+ * Yaml nio 2 path backend. The path must exists, otherwise {@link java.io.IOException} may be throw
+ * by save and load operations.
  */
-public class FunctionBackend implements Backend {
-    private final Consumer<Map<String, Object>> saver;
-    private final Supplier<Map<String, Object>> loader;
-
-    public FunctionBackend(Consumer<Map<String, Object>> saver, Supplier<Map<String, Object>> loader) {
-        this.saver = saver;
-        this.loader = loader;
+public class YamlNioBackend extends YamlBackend {
+    /**
+     * Creates a yaml backend that saves and load yaml from a path.
+     *
+     * @param yaml    Yaml specification.
+     * @param path    Path to save and load yaml.
+     * @param charset Charset to be used to write and read yaml characters.
+     */
+    public YamlNioBackend(Yaml yaml, Path path, Charset charset) {
+        super(yaml, YamlNioBackend.getWriter(path, charset), YamlNioBackend.getReader(path, charset));
     }
 
-    public Consumer<Map<String, Object>> getSaver() {
-        return this.saver;
+    private static Supplier<Writer> getWriter(Path path, Charset charset) {
+        return (ESupplier<Writer>) () -> Files.newBufferedWriter(path, charset);
     }
 
-    public Supplier<Map<String, Object>> getLoader() {
-        return this.loader;
-    }
-
-    @Override
-    public void save(Map<String, Object> map) {
-        this.getSaver().accept(map);
-    }
-
-    @Override
-    public Map<String, Object> load() {
-        return this.getLoader().get();
+    private static Supplier<Reader> getReader(Path path, Charset charset) {
+        return (ESupplier<Reader>) () -> Files.newBufferedReader(path, charset);
     }
 }

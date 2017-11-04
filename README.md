@@ -1,5 +1,7 @@
 # Config
 
-**Key based configuration system**
+Key based configuration system.
 
-Config is a key based configuration system, all `Key`s has a ability to fetch the value from Configuration `Storage`.
+## Backend
+
+The most important part of **Config**. Backend is where value map should be stored and retrieved, but requests are only made

@@ -1,9 +1,9 @@
 /*
- *      Config - Configuration API. <https://github.com/JonathanxD/Config>
+ *      Config - Configuration library <https://github.com/JonathanxD/Config>
  *
  *         The MIT License (MIT)
  *
- *      Copyright (c) 2017 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
+ *      Copyright (c) 2017 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/) <jonathan.scripter@programmer.net>
  *      Copyright (c) contributors
  *
  *
@@ -49,11 +49,20 @@ public class ValueProcessKey<T> extends AbstractKey<T> {
      * @param name          Name of this key.
      * @param typeInfo      Type information of the {@link T value type}.
      * @param storage       Storage to push and fetch values.
+     * @param original      Original key that this emulated key was based, or {@code null} if this
+     *                      is not an emulated key.
      * @param preProcessor  Pre value processor. (Called before value setting) (Nullable).
      * @param postProcessor Post value processor. (Called after value getting) (Nullable).
      */
-    public ValueProcessKey(Config config, Key<?> parent, String name, TypeInfo<T> typeInfo, Storage storage, UnaryOperator<T> preProcessor, UnaryOperator<T> postProcessor) {
-        super(config, parent, name, typeInfo, storage);
+    public ValueProcessKey(Config config,
+                           Key<?> parent,
+                           String name,
+                           TypeInfo<T> typeInfo,
+                           Storage storage,
+                           Key<?> original,
+                           UnaryOperator<T> preProcessor,
+                           UnaryOperator<T> postProcessor) {
+        super(config, parent, name, typeInfo, storage, original);
         this.preProcessor = preProcessor;
         this.postProcessor = postProcessor;
     }
@@ -78,7 +87,7 @@ public class ValueProcessKey<T> extends AbstractKey<T> {
 
         UnaryOperator<T> postProcessor = this.getPostProcessor();
 
-        if(postProcessor != null)
+        if (postProcessor != null)
             value = postProcessor.apply(value);
 
         return value;
@@ -89,7 +98,7 @@ public class ValueProcessKey<T> extends AbstractKey<T> {
 
         UnaryOperator<T> preProcessor = this.getPreProcessor();
 
-        if(preProcessor != null)
+        if (preProcessor != null)
             value = preProcessor.apply(value);
 
         super.setValue(value);
@@ -125,7 +134,13 @@ public class ValueProcessKey<T> extends AbstractKey<T> {
          * @param postProcessor Post value processor. (Called after value getting) (Nullable).
          */
         public Delegate(Key<T> delegate, UnaryOperator<T> preProcessor, UnaryOperator<T> postProcessor) {
-            super(delegate.getConfig(), delegate.getParent(), delegate.getName(), delegate.getTypeInfo(), delegate.getStorage(), preProcessor, postProcessor);
+            super(delegate.getConfig(),
+                    delegate.getParent(),
+                    delegate.getName(),
+                    delegate.getTypeInfo(),
+                    delegate.getStorage(),
+                    delegate.getOriginalKey(),
+                    preProcessor, postProcessor);
             this.delegate = delegate;
         }
 
@@ -140,7 +155,7 @@ public class ValueProcessKey<T> extends AbstractKey<T> {
 
             UnaryOperator<T> postProcessor = this.getPostProcessor();
 
-            if(postProcessor != null)
+            if (postProcessor != null)
                 value = postProcessor.apply(value);
 
             return value;
@@ -150,7 +165,7 @@ public class ValueProcessKey<T> extends AbstractKey<T> {
         public void setValue(T value) {
             UnaryOperator<T> preProcessor = this.getPreProcessor();
 
-            if(preProcessor != null)
+            if (preProcessor != null)
                 value = preProcessor.apply(value);
 
             this.getDelegate().setValue(value);

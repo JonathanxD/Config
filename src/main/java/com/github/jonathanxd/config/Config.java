@@ -1,9 +1,9 @@
 /*
- *      Config - Configuration API. <https://github.com/JonathanxD/Config>
+ *      Config - Configuration library <https://github.com/JonathanxD/Config>
  *
  *         The MIT License (MIT)
  *
- *      Copyright (c) 2017 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
+ *      Copyright (c) 2017 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/) <jonathan.scripter@programmer.net>
  *      Copyright (c) contributors
  *
  *
@@ -31,16 +31,17 @@ import com.github.jonathanxd.config.backend.Backend;
 import com.github.jonathanxd.config.serialize.Serializers;
 import com.github.jonathanxd.iutils.type.TypeInfo;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Configuration, this class stores values in a {@link Map} of {@link String} and {@link Object},
- * the {@link #root Root key} is a key that pushes and fetches all values from the {@link #map Root
- * map} using the {@link Storage.ConfigStorage Configuration Storage}.
+ * Configuration front-end. Values are stored in a {@link Storage.MapStorage MapStorage}, and later
+ * saved and loaded from {@link Backend} through {@link #save()} and {@link #load()} in form of a
+ * {@link Map}.
  *
- * Methods {@link #put(String, Object)} and {@link #get(String)} must store and get values from
- * {@link #map Root map}, and not from the {@link #root Root key}.
+ * Keys uses {@link Storage} to save and retrieve their values, also {@link Storage} is used by
+ * serialization and deserialization of objects.
  */
 public class Config {
 
@@ -53,6 +54,11 @@ public class Config {
      * Root map
      */
     private final Map<String, Object> map = new HashMap<>();
+
+    /**
+     * Configuration storage
+     */
+    private final Storage storage = Storage.createMapStorage(this, this.map);
 
     /**
      * Serializers
@@ -76,6 +82,7 @@ public class Config {
      */
     public Config(Backend backend) {
         this.backend = backend;
+        this.getBackend().registerSerializers(this.getSerializers());
     }
 
     /**
@@ -106,44 +113,24 @@ public class Config {
     }
 
     /**
-     * Put the {@code key} and {@code value} into the {@link #map root map} (not the root key).
-     *
-     * @param key   Key
-     * @param value Value.
-     */
-    public void put(String key, Object value) {
-        this.map.put(key, value);
-    }
-
-    /**
-     * Gets the value linked to {@code key} from {@link #map root map} (not the root key).
-     *
-     * @param key Key.
-     * @return Value linked to {@code key}.
-     */
-    public Object get(String key) {
-        return this.map.get(key);
-    }
-
-    /**
      * Saves the configuration.
      */
     public void save() {
-        this.backend.doAction(this.map, Backend.Action.SAVE);
+        this.backend.save(Collections.unmodifiableMap(new HashMap<>(this.map)));
     }
 
     /**
      * Loads the configuration.
      */
     public void load() {
-        this.backend.doAction(this.map, Backend.Action.LOAD);
+        this.map.clear();
+        this.map.putAll(this.backend.load());
     }
 
     /**
-     * {@link #root Root key} instance type, this class uses a different strategy to create a child
-     * {@link Key}, the {@link Key} implementation creates a new {@link Storage.ObjectStorage} to
-     * store the value, and this passes the {@link Storage.ConfigStorage Configuration Storage} to
-     * child {@link Key}.
+     * Root configuration key, the {@link Storage storage} of this key is the same as {@link Config
+     * enclosing config}, children uses the same {@link Storage storage} as this key, but sets the
+     * entry of the map instead of the entire map.
      */
     class RootKey extends Key<Map<String, Object>> {
 
@@ -153,12 +140,12 @@ public class Config {
          * @param config Configuration,
          */
         RootKey(Config config) {
-            super(config, null, null, TYPE, new Storage.ConfigStorage(Config.this));
+            super(config, null, null, TYPE, Config.this.storage, null);
         }
 
         @Override
         public <V> Key<V> getKey(String name, TypeInfo<V> typeInfo) {
-            return new Key<>(Config.this, this, name, typeInfo, this.getStorage());
+            return new Key<>(Config.this, this, name, typeInfo, this.getStorage(), null);
         }
 
         @Override
@@ -169,7 +156,6 @@ public class Config {
         @SuppressWarnings("unchecked")
         @Override
         public void setValue(Map<String, Object> value) {
-
             Map<String, Object> map = this.getValue();
             map.clear();
             map.putAll(value);

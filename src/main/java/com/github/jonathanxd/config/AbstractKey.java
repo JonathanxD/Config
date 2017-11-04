@@ -1,9 +1,9 @@
 /*
- *      Config - Configuration API. <https://github.com/JonathanxD/Config>
+ *      Config - Configuration library <https://github.com/JonathanxD/Config>
  *
  *         The MIT License (MIT)
  *
- *      Copyright (c) 2017 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
+ *      Copyright (c) 2017 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/) <jonathan.scripter@programmer.net>
  *      Copyright (c) contributors
  *
  *
@@ -27,7 +27,6 @@
  */
 package com.github.jonathanxd.config;
 
-import com.github.jonathanxd.iutils.string.ToStringHelper;
 import com.github.jonathanxd.iutils.type.TypeInfo;
 
 /**
@@ -45,16 +44,19 @@ public abstract class AbstractKey<T> extends Key<T> {
      * @param name     Name of this key.
      * @param typeInfo Type information of the {@link T value type}.
      * @param storage  Storage to push and fetch values.
+     * @param original Original key that this emulated key was based, or {@code null} if this is not
+     *                 an emulated key.
      */
-    public AbstractKey(Config config, Key<?> parent, String name, TypeInfo<T> typeInfo, Storage storage) {
-        super(config, parent, name, typeInfo, storage);
+    protected AbstractKey(Config config, Key<?> parent, String name, TypeInfo<T> typeInfo, Storage storage, Key<?> original) {
+        super(config, parent, name, typeInfo, storage, original);
     }
 
     /**
      * Basic implementation of {@link AbstractKey}
+     *
      * @param <T> Type of value.
      */
-    public static class Impl<T> extends AbstractKey<T> {
+    static class Impl<T> extends AbstractKey<T> {
 
         /**
          * Creates a key.
@@ -64,9 +66,11 @@ public abstract class AbstractKey<T> extends Key<T> {
          * @param name     Name of this key.
          * @param typeInfo Type information of the {@link T value type}.
          * @param storage  Storage to push and fetch values.
+         * @param original Original key that this emulated key was based, or {@code null} if this is
+         *                 not an emulated key.
          */
-        public Impl(Config config, Key<?> parent, String name, TypeInfo<T> typeInfo, Storage storage) {
-            super(config, parent, name, typeInfo, storage);
+        Impl(Config config, Key<?> parent, String name, TypeInfo<T> typeInfo, Storage storage, Key<?> original) {
+            super(config, parent, name, typeInfo, storage, original);
         }
     }
 }

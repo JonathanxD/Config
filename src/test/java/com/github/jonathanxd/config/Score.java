@@ -25,39 +25,29 @@
  *      OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *      THE SOFTWARE.
  */
-package com.github.jonathanxd.config.backend;
+package com.github.jonathanxd.config;
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
-/**
- * Backend that delegates save and load to {@link Consumer} and {@link Supplier}.
- */
-public class FunctionBackend implements Backend {
-    private final Consumer<Map<String, Object>> saver;
-    private final Supplier<Map<String, Object>> loader;
+public class Score {
+    private final Map<String, Integer> scores;
 
-    public FunctionBackend(Consumer<Map<String, Object>> saver, Supplier<Map<String, Object>> loader) {
-        this.saver = saver;
-        this.loader = loader;
+    public Score() {
+        this.scores = new HashMap<>();
     }
 
-    public Consumer<Map<String, Object>> getSaver() {
-        return this.saver;
+    public Score(Map<String, Integer> scores) {
+        this();
+        this.getScores().putAll(scores);
     }
 
-    public Supplier<Map<String, Object>> getLoader() {
-        return this.loader;
+    public Map<String, Integer> getScores() {
+        return this.scores;
     }
 
     @Override
-    public void save(Map<String, Object> map) {
-        this.getSaver().accept(map);
-    }
-
-    @Override
-    public Map<String, Object> load() {
-        return this.getLoader().get();
+    public String toString() {
+        return "Score["+this.getScores()+"]";
     }
 }

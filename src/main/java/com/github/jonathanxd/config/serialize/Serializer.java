@@ -1,9 +1,9 @@
 /*
- *      Config - Configuration API. <https://github.com/JonathanxD/Config>
+ *      Config - Configuration library <https://github.com/JonathanxD/Config>
  *
  *         The MIT License (MIT)
  *
- *      Copyright (c) 2017 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
+ *      Copyright (c) 2017 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/) <jonathan.scripter@programmer.net>
  *      Copyright (c) contributors
  *
  *
@@ -29,29 +29,39 @@ package com.github.jonathanxd.config.serialize;
 
 import com.github.jonathanxd.config.Key;
 import com.github.jonathanxd.config.Storage;
+import com.github.jonathanxd.iutils.type.TypeInfo;
 
 /**
- * Object Serializer.
+ * Serializer, transform objects into configuration values and configuration values into objects.
+ *
+ * The serializer implementation should take care about {@link Key#isEmulated() emulated keys}.
+ * Values of these keys cannot be retrieved from the {@link Storage storage} of the {@link
+ * Key#getParent() parent key} of them.
  *
  * @param <T> Object type.
+ * @see Key
  */
 public interface Serializer<T> {
 
     /**
      * Serialize object of type {@link T} to {@code key}.
      *
-     * @param value   Object to serialize.
-     * @param key     Key to store serialized object.
-     * @param storage Current storage to push and fetch values safely.
+     * @param value       Object to serialize.
+     * @param key         Key to store serialized object.
+     * @param typeInfo    Type info provided to serializer.
+     * @param storage     Current storage to push and fetch values safely.
+     * @param serializers Serializers instance that is serializing values.
      */
-    void serialize(T value, Key<T> key, Storage storage);
+    void serialize(T value, Key<T> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers);
 
     /**
      * Deserialize {@code key} to object of type {@link T}.
      *
-     * @param key     Key to deserialize.
-     * @param storage Current storage to push and fetch values safely.
-     * @return Deserialized object of type {@link T}.
+     * @param key         Key to deserialize.
+     * @param typeInfo    Type info provided to serializer.
+     * @param storage     Current storage to push and fetch values safely.
+     * @param serializers Serializers instance that is de-serializing values.
+     * @return De-serialized object of type {@link T}.
      */
-    T deserialize(Key<T> key, Storage storage);
+    T deserialize(Key<T> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers);
 }

@@ -25,39 +25,31 @@
  *      OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *      THE SOFTWARE.
  */
-package com.github.jonathanxd.config.backend;
+package com.github.jonathanxd.config;
+
+import com.github.jonathanxd.config.serialize.Serializer;
+import com.github.jonathanxd.config.serialize.Serializers;
+import com.github.jonathanxd.iutils.type.TypeInfo;
 
 import java.util.Map;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
-/**
- * Backend that delegates save and load to {@link Consumer} and {@link Supplier}.
- */
-public class FunctionBackend implements Backend {
-    private final Consumer<Map<String, Object>> saver;
-    private final Supplier<Map<String, Object>> loader;
+public class PersonSerializer implements Serializer<Person> {
 
-    public FunctionBackend(Consumer<Map<String, Object>> saver, Supplier<Map<String, Object>> loader) {
-        this.saver = saver;
-        this.loader = loader;
+    private final Map<String, Person> personRegistry;
+
+    public PersonSerializer(Map<String, Person> personRegistry) {
+        this.personRegistry = personRegistry;
     }
 
-    public Consumer<Map<String, Object>> getSaver() {
-        return this.saver;
-    }
 
-    public Supplier<Map<String, Object>> getLoader() {
-        return this.loader;
+    @Override
+    public void serialize(Person value, Key<Person> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+        storage.store(key, TypeInfo.of(String.class), value.getName());
+        //storage.pushValue(key, value.getName());
     }
 
     @Override
-    public void save(Map<String, Object> map) {
-        this.getSaver().accept(map);
-    }
-
-    @Override
-    public Map<String, Object> load() {
-        return this.getLoader().get();
+    public Person deserialize(Key<Person> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+        return personRegistry.get(storage.getAs(key, String.class));
     }
 }

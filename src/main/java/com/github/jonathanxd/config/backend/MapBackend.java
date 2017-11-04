@@ -1,9 +1,9 @@
 /*
- *      Config - Configuration API. <https://github.com/JonathanxD/Config>
+ *      Config - Configuration library <https://github.com/JonathanxD/Config>
  *
  *         The MIT License (MIT)
  *
- *      Copyright (c) 2017 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
+ *      Copyright (c) 2017 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/) <jonathan.scripter@programmer.net>
  *      Copyright (c) contributors
  *
  *
@@ -38,18 +38,14 @@ public class MapBackend implements Backend {
     private final Map<String, Object> backendMap = new HashMap<>();
 
     @Override
-    public void doAction(Map<String, Object> map, Action action) {
-        switch (action) {
-            case SAVE: {
-                this.backendMap.clear();
-                this.backendMap.putAll(map);
-                return;
-            }
-            case LOAD: {
-                map.clear();
-                map.putAll(this.backendMap);
-            }
-        }
+    public void save(Map<String, Object> map) {
+        this.backendMap.clear();
+        this.backendMap.putAll(map);
+    }
+
+    @Override
+    public Map<String, Object> load() {
+        return this.backendMap;
     }
 
     public Map<String, Object> getBackendMap() {

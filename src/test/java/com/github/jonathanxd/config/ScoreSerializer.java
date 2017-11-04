@@ -25,39 +25,34 @@
  *      OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *      THE SOFTWARE.
  */
-package com.github.jonathanxd.config.backend;
+package com.github.jonathanxd.config;
+
+import com.github.jonathanxd.config.serialize.Serializer;
+import com.github.jonathanxd.config.serialize.Serializers;
+import com.github.jonathanxd.iutils.type.TypeInfo;
+import com.github.jonathanxd.iutils.type.TypeParameterProvider;
 
 import java.util.Map;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
-/**
- * Backend that delegates save and load to {@link Consumer} and {@link Supplier}.
- */
-public class FunctionBackend implements Backend {
-    private final Consumer<Map<String, Object>> saver;
-    private final Supplier<Map<String, Object>> loader;
+public class ScoreSerializer implements Serializer<Score> {
 
-    public FunctionBackend(Consumer<Map<String, Object>> saver, Supplier<Map<String, Object>> loader) {
-        this.saver = saver;
-        this.loader = loader;
-    }
+    private final TypeInfo<Map<String, Integer>> SCORE_MAP_TYPE =
+            new TypeParameterProvider<Map<String, Integer>>() {
+            }.createTypeInfo();
 
-    public Consumer<Map<String, Object>> getSaver() {
-        return this.saver;
-    }
-
-    public Supplier<Map<String, Object>> getLoader() {
-        return this.loader;
+    @Override
+    public void serialize(Score value, Key<Score> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+        storage.store(key, SCORE_MAP_TYPE, value.getScores());
     }
 
     @Override
-    public void save(Map<String, Object> map) {
-        this.getSaver().accept(map);
-    }
+    public Score deserialize(Key<Score> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+        Score score = new Score();
 
-    @Override
-    public Map<String, Object> load() {
-        return this.getLoader().get();
+        Map<String, Integer> scores = storage.getAs(key, SCORE_MAP_TYPE);
+
+        score.getScores().putAll(scores);
+
+        return score;
     }
 }

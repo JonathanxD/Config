@@ -1,9 +1,9 @@
 /*
- *      Config - Configuration API. <https://github.com/JonathanxD/Config>
+ *      Config - Configuration library <https://github.com/JonathanxD/Config>
  *
  *         The MIT License (MIT)
  *
- *      Copyright (c) 2017 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
+ *      Copyright (c) 2017 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/) <jonathan.scripter@programmer.net>
  *      Copyright (c) contributors
  *
  *
@@ -28,23 +28,40 @@
 package com.github.jonathanxd.config.backend;
 
 import com.github.jonathanxd.config.CommonTypes;
+import com.github.jonathanxd.config.serialize.Serializers;
 import com.github.jonathanxd.iutils.type.TypeInfo;
 
 import java.util.List;
 import java.util.Map;
 
 /**
- * Backend, the backend is responsible to save and load the configuration.
+ * Configuration save and load backend.
+ *
+ * Backend should save and load configuration from an object or upstream, this should also specify
+ * to frontend which value types it support or not. The backend should support all {@link
+ * CommonTypes} (if upstream do not, backend should do the extra work).
  */
 public interface Backend {
 
     /**
-     * Do save or load action.
+     * Save configuration {@code map}.
      *
-     * @param map    Mutable map to apply the action.
-     * @param action Action to apply to map.
+     * The provided map should be unmodifiable, and backend should copy all elements of the {@code
+     * map} to internal object or upstream.
+     *
+     * @param map Map to save (may be unmodifiable).
      */
-    void doAction(Map<String, Object> map, Action action);
+    void save(Map<String, Object> map);
+
+    /**
+     * Loads configuration map (can be unmodifiable).
+     *
+     * The implementation should copy all elements of the returned {@link Map map} into your
+     * internal {@link Map map} or {@link com.github.jonathanxd.config.Storage}.
+     *
+     * @return Configuration map.
+     */
+    Map<String, Object> load();
 
     /**
      * Returns true if this backed supports object of {@code type} without serialization.
@@ -65,17 +82,10 @@ public interface Backend {
     }
 
     /**
-     * Configuration action
+     * Called by the frontend to register serializers required by backend.
+     *
+     * @param serializers Serializer manager.
      */
-    enum Action {
-        /**
-         * Save the configuration map
-         */
-        SAVE,
-
-        /**
-         * Load the configuration map
-         */
-        LOAD
+    default void registerSerializers(Serializers serializers) {
     }
 }

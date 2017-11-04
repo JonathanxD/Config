@@ -1,9 +1,9 @@
 /*
- *      Config - Configuration API. <https://github.com/JonathanxD/Config>
+ *      Config - Configuration library <https://github.com/JonathanxD/Config>
  *
  *         The MIT License (MIT)
  *
- *      Copyright (c) 2017 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
+ *      Copyright (c) 2017 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/) <jonathan.scripter@programmer.net>
  *      Copyright (c) contributors
  *
  *
@@ -27,7 +27,7 @@
  */
 package com.github.jonathanxd.config.serialize;
 
-import com.github.jonathanxd.config.AbstractKey;
+import com.github.jonathanxd.config.CommonTypes;
 import com.github.jonathanxd.config.Key;
 import com.github.jonathanxd.config.Storage;
 import com.github.jonathanxd.iutils.type.TypeInfo;
@@ -39,7 +39,12 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Serializer manager
+ * Serializer manager. We recommend to not call {@link Serializers} function directly from {@link
+ * Serializer}. Use {@link Key} functions, such as {@link Key#setValue(Object)}, {@link
+ * Key#getValue()}, {@link Key#getKey(String, Class)}. Read {@link Key} documentation for more
+ * info.
+ *
+ * @see Key
  */
 public final class Serializers {
 
@@ -49,7 +54,9 @@ public final class Serializers {
     public static final Serializers GLOBAL = new Serializers();
 
     static {
+        Serializers.GLOBAL.registerAll(CommonTypes.ALL, new BasicSerializer<>());
         Serializers.GLOBAL.register(TypeInfo.of(List.class), new ListSerializer());
+        Serializers.GLOBAL.register(TypeInfo.of(Map.class), new MapSerializer());
     }
 
     /**
@@ -81,7 +88,21 @@ public final class Serializers {
     public <T> void serialize(T value, Key<T> key) {
         this.findSerializer(key.getTypeInfo())
                 .orElseThrow(() -> missingSerializer(key))
-                .serialize(value, key, key.getStorage());
+                .serialize(value, key, key.getTypeInfo(), key.getStorage(), this);
+    }
+
+    /**
+     * Serialize the {@code value} to {@code key} and returns the plain value.
+     *
+     * @param value Value to serialize.
+     * @param key   Key to store serialized value.
+     * @param <T>   Type of the value.
+     * @return Serialized value.
+     */
+    @SuppressWarnings("unchecked")
+    public <T> T serializeAndGet(T value, Key<T> key) {
+        this.serialize(value, key);
+        return (T) key.getStorage().fetchValue(key);
     }
 
     /**
@@ -96,16 +117,30 @@ public final class Serializers {
     }
 
     /**
+     * Serialize the {@code value} to {@code key} and returns the plain value.
+     *
+     * @param value Value to serialize.
+     * @param key   Key to store serialized value.
+     * @return Serialized value.
+     */
+    @SuppressWarnings("unchecked")
+    public Object serializeUncheckedAndGet(Object value, Key<?> key) {
+        this.serializeUnchecked(value, key);
+        return key.getStorage().fetchValue(key);
+    }
+
+    /**
      * Serialize the {@code value} to {@code key}.
      *
      * @param value Value to serialize.
      * @param key   Key to store serialized value.
+     *              @param typeInfo Type of expected value.
      */
     @SuppressWarnings("unchecked")
     public void serializeUnchecked(Object value, Key<?> key, TypeInfo<?> typeInfo) {
         ((Serializer<Object>) this.findSerializer(typeInfo)
                 .orElseThrow(() -> missingSerializer(key, typeInfo)))
-                .serialize(value, (Key<Object>) key, key.getStorage());
+                .serialize(value, (Key<Object>) key, typeInfo, key.getStorage(), this);
     }
 
     /**
@@ -113,13 +148,13 @@ public final class Serializers {
      *
      * @param key Key to deserialize object.
      * @param <T> Type of value.
-     * @return Object deserialized from {@code key}.
+     * @return Object de-serialized from {@code key}.
      */
     @SuppressWarnings("unchecked")
     public <T> T deserialize(Key<T> key) {
         return this.findSerializer(key.getTypeInfo())
                 .orElseThrow(() -> missingSerializer(key))
-                .deserialize(key, key.getStorage());
+                .deserialize(key, key.getTypeInfo(), key.getStorage(), this);
     }
 
     /**
@@ -127,24 +162,47 @@ public final class Serializers {
      *
      * @param key      Key to deserialize object.
      * @param typeInfo Information of type to deserialize.
-     * @return Object deserialized from {@code key}.
+     * @return Object de-serialized from {@code key}.
      */
     @SuppressWarnings("unchecked")
-    public <T> Object deserializeUnchecked(Key<?> key, TypeInfo<?> typeInfo) {
-        return this.findSerializer((TypeInfo<T>) typeInfo)
-                .orElseThrow(() -> missingSerializer(key, typeInfo))
-                .deserialize((Key<T>) key, key.getStorage());
+    public Object deserializeUnchecked(Key<?> key, TypeInfo<?> typeInfo) {
+        return ((Serializer<Object>) this.findSerializer(typeInfo)
+                .orElseThrow(() -> missingSerializer(key, typeInfo)))
+                .deserialize((Key<Object>) key, typeInfo, key.getStorage(), this);
     }
 
     /**
      * Register a serializer of values of type {@link T}.
      *
-     * @param typeInfo   Type information.
+     * @param typeInfo   Type of value that {@code serializer} can serialize and deserialize.
      * @param serializer Serializer.
      * @param <T>        Type of the value.
      */
     public <T> void register(TypeInfo<T> typeInfo, Serializer<T> serializer) {
         this.getSerializerMap().put(typeInfo, serializer);
+    }
+
+    /**
+     * Register a serializer of values of type {@code typeInfo}.
+     *
+     * @param typeInfo   Type of value that {@code serializer} can serialize and deserialize.
+     * @param serializer Serializer.
+     */
+    public void registerUnchecked(TypeInfo typeInfo, Serializer serializer) {
+        this.getSerializerMap().put(typeInfo, serializer);
+    }
+
+    /**
+     * Register a serializer for all type info in {@code typeInfoIterable}.
+     *
+     * @param typeInfoIterable Iterable with all type info to register serializer to.
+     * @param serializer       Serializer.
+     */
+    public void registerAll(Iterable<TypeInfo<?>> typeInfoIterable, Serializer serializer) {
+        for (TypeInfo<?> info : typeInfoIterable) {
+            this.registerUnchecked(info, serializer);
+        }
+
     }
 
     /**
@@ -213,78 +271,122 @@ public final class Serializers {
         return this.serializerMap;
     }
 
+    static class BasicSerializer<T> implements Serializer<T> {
+
+        @Override
+        public void serialize(T value, Key<T> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            storage.pushValue(key, value);
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public T deserialize(Key<T> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            return (T) storage.fetchValue(key);
+        }
+    }
+
+    static class MapSerializer implements Serializer<Map> {
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public void serialize(Map value, Key<Map> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+
+            Map<Object, Object> newMap = new HashMap<>();
+            TypeInfo<?> keyType = typeInfo.getTypeParameter(0); // K
+            TypeInfo<?> valueType = typeInfo.getTypeParameter(1); // V
+
+            Map<String, Object> temp = new HashMap<>();
+            Storage newStorage = Storage.createMapStorage(key, temp);
+
+            for (Map.Entry<?, ?> o : ((Map<?, ?>) value).entrySet()) {
+                Key<?> vKey = Key.createKey(key, keyType, newStorage);
+                Key<?> vValue = Key.createKey(key, valueType, newStorage);
+
+                Object serializedKey = serializers.serializeUncheckedAndGet(o.getKey(), vKey);
+                temp.clear();
+
+                Object serializedValue = serializers.serializeUncheckedAndGet(o.getValue(), vValue);
+                temp.clear();
+
+                newMap.put(serializedKey, serializedValue);
+            }
+
+            storage.pushValue(key, newMap);
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public Map deserialize(Key<Map> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+
+            Map<Object, Object> newMap = new HashMap<>();
+
+            Object value = storage.fetchValue(key);
+
+            if (value instanceof Map) {
+                TypeInfo<?> keyType = typeInfo.getTypeParameter(0); // K
+                TypeInfo<?> valueType = typeInfo.getTypeParameter(1); // V
+
+                Storage newStorage = Storage.createMapStorage(key);
+
+                for (Map.Entry<?, ?> o : ((Map<?, ?>) value).entrySet()) {
+                    Key<?> vKey = Key.createKey(key, keyType, newStorage);
+                    Key<?> vValue = Key.createKey(key, valueType, newStorage);
+
+                    newStorage.pushValue(vKey, o.getKey());
+
+                    Object deserializedKey = serializers.deserialize(vKey);
+
+                    newStorage.pushValue(vKey, o.getValue()); // Emulated
+                    Object desserializedValue = serializers.deserialize(vValue);
+
+                    newMap.put(deserializedKey, desserializedValue);
+                }
+
+            }
+
+
+            return newMap;
+        }
+    }
+
     /**
      * Serialize a list
      */
     static class ListSerializer implements Serializer<List> {
 
         @Override
-        public void serialize(List value, Key<List> key, Storage storage) {
-            TypeInfo[] related = key.getTypeInfo().getRelated();
+        public void serialize(List value, Key<List> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            TypeInfo<?> elementType = typeInfo.getTypeParameter(0);
 
-            TypeInfo<?> elementType;
-
-            if (related.length > 0) {
-                elementType = related[0];
-            } else {
-                elementType = TypeInfo.of(Object.class);
-            }
-
-            List<Map<String, Object>> list = new ArrayList<>();
-
-
-            Map<String, Object> map = new HashMap<>();
+            Storage newStorage = Storage.createListStorage(key);
 
             for (Object o : value) {
-                Storage newStorage = new Storage.MapStorage(key.getConfig(), map);
+                Key<?> newKey = Key.createKey(key, elementType, newStorage);
 
-                Key<?> newKey = new AbstractKey.Impl<>(key.getConfig(), key.getParent(), key.getName(), elementType, newStorage);
-                ((Key<Object>) newKey).setValue(o);
-
+                serializers.serializeUncheckedAndGet(o, newKey);
             }
-
-            list.add(map);
-
-            storage.pushValue(key, list);
-
         }
 
         @Override
-        public List deserialize(Key<List> key, Storage storage) {
+        public List deserialize(Key<List> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
 
             Object value = storage.fetchValue(key);
 
-            List result = new ArrayList();
+            List<Object> result = new ArrayList<>();
 
             if (value instanceof List) {
-                TypeInfo[] related = key.getTypeInfo().getRelated();
-
-                TypeInfo<?> elementType;
-
-                if (related.length > 0) {
-                    elementType = related[0];
-                } else {
-                    elementType = TypeInfo.of(Object.class);
-                }
+                TypeInfo<?> elementType = typeInfo.getTypeParameter(0);
 
                 List list = (List) value;
 
-                Object at0;
-                if (list.size() == 1 && (at0 = list.get(0)) instanceof Map<?, ?>) {
-                    Map<String, Object> map = (Map<String, Object>) at0;
+                Storage listStorage = Storage.createListStorage(key);
 
+                for (Object o : list) {
+                    Key<?> newKey = Key.createKey(key, elementType, listStorage);
 
-                    //
+                    listStorage.pushValue(newKey, o);
 
-                    if (!map.isEmpty()) {
-                        Storage newStorage = new Storage.MapStorage(key.getConfig(), map);
-
-                        Key<?> newKey = new AbstractKey.Impl<>(key.getConfig(), key.getParent(), key.getName(), elementType, newStorage);
-
-                        Object deserialize = key.getConfig().getSerializers().deserialize(newKey);
-                        result.add(deserialize);
-                    }
-
+                    result.add(serializers.deserialize(newKey));
                 }
             }
 

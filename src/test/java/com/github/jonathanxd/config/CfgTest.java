@@ -1,9 +1,9 @@
 /*
- *      Config - Configuration API. <https://github.com/JonathanxD/Config>
+ *      Config - Configuration library <https://github.com/JonathanxD/Config>
  *
  *         The MIT License (MIT)
  *
- *      Copyright (c) 2017 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
+ *      Copyright (c) 2017 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/) <jonathan.scripter@programmer.net>
  *      Copyright (c) contributors
  *
  *
@@ -35,6 +35,7 @@ import com.github.jonathanxd.iutils.box.MutableBox;
 import com.github.jonathanxd.iutils.map.MapUtils;
 import com.github.jonathanxd.iutils.object.Pairs;
 import com.github.jonathanxd.iutils.type.TypeInfo;
+import com.github.jonathanxd.iutils.type.TypeParameterProvider;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -50,8 +51,20 @@ public class CfgTest {
 
     @Test
     public void test() {
-        Config config = new Config((map, action) -> {
-            System.out.println("Map = "+map+"                  [action="+action+"]");
+        Config config = new Config(new Backend() {
+            Map<String, Object> map;
+
+            @Override
+            public void save(Map<String, Object> map) {
+                this.map = map;
+                System.out.println("SAVE -> " + map);
+            }
+
+            @Override
+            public Map<String, Object> load() {
+                System.out.println(" LOAD ");
+                return this.map;
+            }
         });
 
         Key<Map<String, Object>> rootKey = config.getRootKey();
@@ -93,8 +106,20 @@ public class CfgTest {
 
     @Test
     public void testMap() {
-        Config config = new Config((map, action) -> {
-            System.out.println("Map = "+map+"                  [action="+action+"]");
+        Config config = new Config(new Backend() {
+            Map<String, Object> map;
+
+            @Override
+            public void save(Map<String, Object> map) {
+                this.map = map;
+                System.out.println("SAVE -> " + map);
+            }
+
+            @Override
+            public Map<String, Object> load() {
+                System.out.println(" LOAD ");
+                return this.map;
+            }
         });
 
         Key<Map<String, Object>> rootKey = config.getRootKey();
@@ -132,7 +157,7 @@ public class CfgTest {
         Config config = new Config(
                 new FunctionBackend(map -> {
                     yamlStr.set(yaml.dump(map));
-                    System.out.println("Yaml = "+yamlStr.get()+"                  [action=SAVE]");
+                    System.out.println("Yaml = " + yamlStr.get() + "                  [action=SAVE]");
                 }, () -> (Map<String, Object>) yaml.load(yamlStr.get())));
 
         Key<Map<String, Object>> rootKey = config.getRootKey();
@@ -166,6 +191,8 @@ public class CfgTest {
 
         config.save();
 
+        read(config);
+
         String save2 = yamlStr.get();
 
         Assert.assertEquals(save1, save2);
@@ -183,16 +210,100 @@ public class CfgTest {
         System.out.println("/==========================================/");
     }
 
+    @SuppressWarnings("unchecked")
+    @Test
+    public void uncommonKeyTest() {
+        Yaml yaml = new Yaml();
+        MutableBox<String> yamlStr = new MutableBox<>("");
+
+        Config config = new Config(
+                new FunctionBackend(map -> {
+                    yamlStr.set(yaml.dump(map));
+                    System.out.println("Yaml = " + yamlStr.get() + "                  [action=SAVE]");
+                }, () -> (Map<String, Object>) yaml.load(yamlStr.get())));
+
+        Key<Map<String, Object>> rootKey = config.getRootKey();
+
+        Map<String, String> mapi = new HashMap<>();
+
+        mapi.put("Name", "Machine");
+        mapi.put("Id", "game:machine");
+
+        Key<Map<String, String>> players =
+                rootKey.getKey("players", TypeInfo.builderOf(Map.class).of(String.class, String.class).buildGeneric());
+
+        players.setValue(mapi);
+
+        List<Map<String, String>> mapList = new ArrayList<>();
+
+        //noinspection unchecked
+        mapList.add(MapUtils.mapFromPairs(Pairs.of("Name", "RN"), Pairs.of("Id", "game:rn")));
+
+
+        Key<List<Map<String, String>>> oops = rootKey.getKey("oops", TypeInfo.builderOf(List.class)
+                .of(TypeInfo.builderOf(Map.class).of(String.class, String.class)).buildGeneric());
+
+        oops.setValue(mapList);
+
+
+        ///////////////////////////
+        Key<Map<Map<String, String>, String>> exKey = rootKey.getKey("uncommonKey",
+                new TypeParameterProvider<Map<Map<String, String>, String>>() {
+                }.createTypeInfo());
+
+        Map<Map<String, String>, String> ex = new HashMap<>();
+        ex.put(MapUtils.mapOf("key1", "key2"), "value1");
+
+        exKey.setValue(ex);
+
+        ///////////////////////////
+
+
+        config.save();
+
+        String save1 = yamlStr.get();
+
+        config.load();
+
+        config.save();
+
+        read(config);
+
+        String save2 = yamlStr.get();
+
+        Assert.assertEquals(save1, save2);
+    }
+
+    private void read(Config config) {
+        Key<Map<String, Object>> rootKey = config.getRootKey();
+
+        Key<List<Map<String, String>>> oops = rootKey.getKey("oops",
+                new TypeParameterProvider<List<Map<String, String>>>() {
+                }.createTypeInfo());
+
+        List<Map<String, String>> value = oops.getValue();
+
+
+        System.out.println(value);
+    }
+
     public static class MemberSerializer implements Serializer<Member> {
 
         @Override
-        public void serialize(Member value, Key<Member> key, Storage storage) {
+        public void serialize(Member value,
+                              Key<Member> key,
+                              TypeInfo<?> typeInfo,
+                              Storage storage,
+                              Serializers serializers) {
             key.getKey("name", String.class).setValue(value.getName());
             key.getKey("age", Integer.class).setValue(value.getAge());
         }
 
         @Override
-        public Member deserialize(Key<Member> key, Storage storage) {
+        public Member deserialize(Key<Member> key,
+                                  TypeInfo<?> typeInfo,
+                                  Storage storage,
+                                  Serializers serializers) {
 
             String name = key.getKey("name", String.class).getValue();
             int age = key.getKey("age", Integer.class).getValue();
@@ -205,7 +316,7 @@ public class CfgTest {
         private final String name;
         private final int age;
 
-        public Member(String name, int age) {
+        Member(String name, int age) {
             this.name = name;
             this.age = age;
         }
@@ -220,7 +331,7 @@ public class CfgTest {
 
         @Override
         public String toString() {
-            return "Member[name="+name+", age="+age+"]";
+            return "Member[name=" + name + ", age=" + age + "]";
         }
     }
 
@@ -236,13 +347,13 @@ public class CfgTest {
             int t = 0;
 
             for (char aChar : chars) {
-                if(aChar == '[')
+                if (aChar == '[')
                     ++t;
 
-                if(aChar == ']')
+                if (aChar == ']')
                     --t;
 
-                if(t > 0)
+                if (t > 0)
                     aChar = Character.toUpperCase(aChar);
 
                 stringBuilder.append(aChar);
