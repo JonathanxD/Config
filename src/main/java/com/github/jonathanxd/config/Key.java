@@ -159,6 +159,17 @@ public class Key<T> {
     }
 
     /**
+     * Gets the children key that {@code keySpec} specifies.
+     *
+     * @param keySpec Key specification.
+     * @param <V>     Type of key value.
+     * @return Children key that {@code keySpec} specifies.
+     */
+    public <V> Key<V> get(KeySpec<V> keySpec) {
+        return keySpec.get(this);
+    }
+
+    /**
      * Creates a new {@link Key key} of type {@link V} linked to a {@link Storage storage}, this
      * child key overwrite the current value.
      *
