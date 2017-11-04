@@ -72,7 +72,7 @@ public class CommonTypes {
     public static final TypeInfo<Class<?>> CLASS = new TypeParameterProvider<Class<?>>() {
     }.createTypeInfo();
 
-    public static final List<TypeInfo<?>> ALL = Collections.unmodifiableList(Collections3.listOf(
+    public static final List<TypeInfo<?>> PRIMITIVE = Collections.unmodifiableList(Collections3.listOf(
             BOXED_BOOLEAN, BOOLEAN,
             BYTE, BOXED_BYTE,
             SHORT, BOXED_SHORT,
@@ -80,31 +80,63 @@ public class CommonTypes {
             INTEGER, BOXED_INTEGER,
             FLOAT, BOXED_FLOAT,
             LONG, BOXED_LONG,
-            DOUBLE, BOXED_DOUBLE,
-            /*OBJECT, */STRING
+            DOUBLE, BOXED_DOUBLE
     ));
 
+    public static boolean isBoolean(TypeInfo<?> type) {
+        return BOXED_BOOLEAN.isAssignableFrom(type) || BOOLEAN.isAssignableFrom(type);
+    }
+
+    public static boolean isByte(TypeInfo<?> type) {
+        return BOXED_BYTE.isAssignableFrom(type) || BYTE.isAssignableFrom(type);
+    }
+
+    public static boolean isShort(TypeInfo<?> type) {
+        return BOXED_SHORT.isAssignableFrom(type) || SHORT.isAssignableFrom(type);
+    }
+
+    public static boolean isChar(TypeInfo<?> type) {
+        return BOXED_CHAR.isAssignableFrom(type) || CHAR.isAssignableFrom(type);
+    }
+
+    public static boolean isInteger(TypeInfo<?> type) {
+        return BOXED_INTEGER.isAssignableFrom(type) || INTEGER.isAssignableFrom(type);
+    }
+
+    public static boolean isFloat(TypeInfo<?> type) {
+        return BOXED_FLOAT.isAssignableFrom(type) || FLOAT.isAssignableFrom(type);
+    }
+
+    public static boolean isLong(TypeInfo<?> type) {
+        return BOXED_LONG.isAssignableFrom(type) || LONG.isAssignableFrom(type);
+    }
+
+    public static boolean isDouble(TypeInfo<?> type) {
+        return BOXED_DOUBLE.isAssignableFrom(type) || DOUBLE.isAssignableFrom(type);
+    }
+
+    public static boolean isObject(TypeInfo<?> type) {
+        return OBJECT.isAssignableFrom(type);
+    }
+
+    public static boolean isString(TypeInfo<?> type) {
+        return STRING.isAssignableFrom(type);
+    }
+
     public static boolean isValidBasicType(TypeInfo<?> type) {
-        return type.isAssignableFrom(BOXED_BOOLEAN)
-                || type.isAssignableFrom(BOXED_BYTE)
-                || type.isAssignableFrom(BOXED_SHORT)
-                || type.isAssignableFrom(BOXED_CHAR)
-                || type.isAssignableFrom(BOXED_INTEGER)
-                || type.isAssignableFrom(BOXED_FLOAT)
-                || type.isAssignableFrom(BOXED_LONG)
-                || type.isAssignableFrom(BOXED_DOUBLE)
-                //|| type.isAssignableFrom(BOXED_VOID)
-                || type.isAssignableFrom(BOOLEAN)
-                || type.isAssignableFrom(BYTE)
-                || type.isAssignableFrom(SHORT)
-                || type.isAssignableFrom(CHAR)
-                || type.isAssignableFrom(INTEGER)
-                || type.isAssignableFrom(FLOAT)
-                || type.isAssignableFrom(LONG)
-                || type.isAssignableFrom(DOUBLE)
-                //|| type.isAssignableFrom(VOID)
-                || type.isAssignableFrom(OBJECT)
-                || type.isAssignableFrom(STRING)
+
+        return CommonTypes.isBoolean(type)
+                || CommonTypes.isByte(type)
+                || CommonTypes.isShort(type)
+                || CommonTypes.isChar(type)
+                || CommonTypes.isInteger(type)
+                || CommonTypes.isFloat(type)
+                || CommonTypes.isLong(type)
+                || CommonTypes.isDouble(type)
+                //|| BOXED_VOID.isAssignableFrom(type)
+                //|| VOID.isAssignableFrom(type)
+                || CommonTypes.isObject(type)
+                || CommonTypes.isString(type)
                 || CommonTypes.isValidMap(type)
                 || CommonTypes.isValidList(type);
     }

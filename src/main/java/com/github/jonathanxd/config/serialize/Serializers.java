@@ -30,6 +30,7 @@ package com.github.jonathanxd.config.serialize;
 import com.github.jonathanxd.config.CommonTypes;
 import com.github.jonathanxd.config.Key;
 import com.github.jonathanxd.config.Storage;
+import com.github.jonathanxd.iutils.matching.When;
 import com.github.jonathanxd.iutils.type.TypeInfo;
 import com.github.jonathanxd.iutils.type.TypeInfoUtil;
 
@@ -55,7 +56,8 @@ public final class Serializers {
     public static final Serializers GLOBAL = new Serializers();
 
     static {
-        Serializers.GLOBAL.registerAll(CommonTypes.ALL, new BasicSerializer<>());
+        Serializers.GLOBAL.registerAll(CommonTypes.PRIMITIVE, new PrimitiveSerializer<>());
+        Serializers.GLOBAL.register(CommonTypes.STRING, new PrimitiveSerializer<>());
         Serializers.GLOBAL.register(TypeInfo.of(List.class), new ListSerializer());
         Serializers.GLOBAL.register(TypeInfo.of(Map.class), new MapSerializer());
         Serializers.GLOBAL.register(CommonTypes.TYPE_INFO, new TypeInfoSerializer());
@@ -295,6 +297,32 @@ public final class Serializers {
         @Override
         public T deserialize(Key<T> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
             return (T) storage.fetchValue(key);
+        }
+    }
+
+    static class PrimitiveSerializer<T> implements Serializer<T> {
+
+        @Override
+        public void serialize(T value, Key<T> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            storage.pushValue(key, value);
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public T deserialize(Key<T> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            String s = storage.fetchValue(key).toString();
+
+            return (T) When.When(typeInfo,
+                    When.Matches(CommonTypes::isBoolean, t -> Boolean.valueOf(s)),
+                    When.Matches(CommonTypes::isByte, t -> Byte.valueOf(s)),
+                    When.Matches(CommonTypes::isShort, t -> Short.valueOf(s)),
+                    When.Matches(CommonTypes::isChar, t -> s.charAt(0)),
+                    When.Matches(CommonTypes::isInteger, t -> Integer.valueOf(s)),
+                    When.Matches(CommonTypes::isFloat, t -> Float.valueOf(s)),
+                    When.Matches(CommonTypes::isLong, t -> Long.valueOf(s)),
+                    When.Matches(CommonTypes::isDouble, t -> Double.valueOf(s)),
+                    When.Matches(CommonTypes::isString, t -> s)
+            ).evaluate().getValue();
         }
     }
 

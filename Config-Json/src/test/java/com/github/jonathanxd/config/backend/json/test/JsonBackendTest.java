@@ -50,17 +50,24 @@ public class JsonBackendTest {
 
         Config config = new Config(jsonBackend);
         Key<String> key = config.getRootKey().getKey("backend", String.class);
+        Key<Byte> byteKey = config.getRootKey().getKey("byte", Byte.class);
         key.setValue("Yaml backend");
+
+        byteKey.setValue((byte) 9);
+
         config.save();
 
         String first = box.get();
 
-        box.set("{\"backend\": \"Yaml backend Uhu\"}");
+        box.set("{\"backend\": \"Yaml backend Uhu\", \"byte\": 9}");
 
         config.load();
 
-        Assert.assertEquals("{\"backend\":\"Yaml backend\"}", first);
+        Byte b = byteKey.getValue();
+
+        Assert.assertEquals("{\"byte\":9,\"backend\":\"Yaml backend\"}", first);
         Assert.assertEquals("Yaml backend Uhu", key.getValue());
+        Assert.assertEquals(9, (int) b);
     }
 
 }
