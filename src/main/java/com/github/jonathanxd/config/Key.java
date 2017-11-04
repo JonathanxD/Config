@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 /**
  * Configuration key, the key is an accessor of configuration values, the {@link T type} provided to
@@ -189,6 +190,30 @@ public class Key<T> {
     }
 
     /**
+     * Gets this key as a get of another type.
+     *
+     * @param type New type.
+     * @param <V>  New type.
+     * @return A new emulated key that emulates this key with different type.
+     */
+    public <V> Key<V> getAs(Class<V> type) {
+        return this.getAs(TypeInfo.of(type));
+    }
+
+    /**
+     * Gets this key as a get of another type that stores values in alternative {@code storage}.
+     *
+     * @param type    New type.
+     * @param storage New storage.
+     * @param <V>     New type.
+     * @return A new emulated key that emulates this key with different type that stores values in
+     * alternative {@code storage}.
+     */
+    public <V> Key<V> getAs(Class<V> type, Storage storage) {
+        return this.getAs(TypeInfo.of(type), storage);
+    }
+
+    /**
      * Gets the children key that {@code keySpec} specifies.
      *
      * @param keySpec Key specification.
@@ -265,6 +290,41 @@ public class Key<T> {
      */
     public void setValue(T value) {
         this.getStorage().store(this, value);
+    }
+
+    /**
+     * Returns the value associated to this key in {@link Storage storage}, or returns {@code value}
+     * if there is no value stored.
+     *
+     * @return Value stored in {@link Storage storage} or {@code value} if there is not value
+     * stored.
+     * @throws UnsupportedValueTypeException If there is no {@link com.github.jonathanxd.config.serialize.Serializer}
+     *                                       registered for type and value is not supported by
+     *                                       {@link com.github.jonathanxd.config.backend.Backend}.
+     */
+    @SuppressWarnings("unchecked")
+    public T getValueOr(T value) throws UnsupportedValueTypeException {
+        if (!this.exists())
+            return value;
+        return this.getValue();
+    }
+
+    /**
+     * Returns the value associated to this key in {@link Storage storage}, or returns value
+     * supplied by {@code valueSupplier} if there is no value stored.
+     *
+     * @return Value stored in {@link Storage storage} or value supplied by {@code valueSupplier} if
+     * there is not value stored.
+     * @throws UnsupportedValueTypeException If there is no {@link com.github.jonathanxd.config.serialize.Serializer}
+     *                                       registered for type and value is not supported by
+     *                                       {@link com.github.jonathanxd.config.backend.Backend}.
+     */
+    @SuppressWarnings("unchecked")
+    public T getValueOrSupplied(Supplier<T> valueSupplier) throws UnsupportedValueTypeException {
+        if (!this.exists())
+            return valueSupplier.get();
+
+        return this.getValue();
     }
 
     /**
