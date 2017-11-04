@@ -33,6 +33,7 @@ import com.github.jonathanxd.iutils.map.MapUtils;
 import com.github.jonathanxd.iutils.type.TypeInfo;
 import com.github.jonathanxd.iutils.type.TypeParameterProvider;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.yaml.snakeyaml.Yaml;
 
@@ -53,12 +54,15 @@ public class SimpleTest {
         // Keys
         Key<Map<String, Object>> rootKey = config.getRootKey();
         Key<Map<Person, Score>> scoreKey = rootKey.getKey("score", new TypeParameterProvider<Map<Person, Score>>(){}.createTypeInfo());
+        Key<My> myKey = rootKey.getKey("myEnum", new TypeParameterProvider<My>(){}.createTypeInfo());
         // /Keys
+
+        myKey.setValue(My.A);
 
         Person dev = new Person("Dev", 1);
         Map<Person, Score> scores = new HashMap<>();
         personRegistry.put(dev.getName(), dev);
-        scores.put(dev, new Score(MapUtils.mapOf("kills", 1,"deaths", 56)));
+        scores.put(dev, new Score(MapUtils.mapOf("kills", 1, "deaths", 56)));
 
         scoreKey.setValue(scores);
         config.save();
@@ -72,18 +76,24 @@ public class SimpleTest {
         config.load();
 
         Map<Person, Score> value = scoreKey.getValue();
+        My my = myKey.getValue();
 
         System.out.println(value);
-    }
+        Assert.assertEquals(My.A, my);
 
-    private void read(String s) {
+        yamlBackend.setYaml(
+                "score:\n" +
+                "  Dev: {kills: 1, deaths: 56}\n" +
+                "myEnum: B\n");
+        config.load();
 
-
+        Assert.assertEquals(My.B, myKey.getValue());
     }
 
     private void registerSerializers(Config config) {
         config.getSerializers().register(TypeInfo.of(Person.class), new PersonSerializer(this.personRegistry));
         config.getSerializers().register(TypeInfo.of(Score.class), new ScoreSerializer());
+        config.getSerializers().registerEnumSerializer(TypeInfo.of(My.class));
     }
 
     static class YamlBackend implements Backend {
@@ -121,6 +131,11 @@ public class SimpleTest {
         public boolean supports(TypeInfo<?> type) {
             return CommonTypes.isValidBasicType(type);
         }
+    }
+
+    public static enum My {
+        A,
+        B
     }
 
 }

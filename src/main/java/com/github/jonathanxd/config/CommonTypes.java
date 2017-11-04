@@ -29,6 +29,7 @@ package com.github.jonathanxd.config;
 
 import com.github.jonathanxd.iutils.collection.Collections3;
 import com.github.jonathanxd.iutils.type.TypeInfo;
+import com.github.jonathanxd.iutils.type.TypeParameterProvider;
 
 import java.util.Collections;
 import java.util.List;
@@ -64,6 +65,12 @@ public class CommonTypes {
 
     public static final TypeInfo<Map> MAP = TypeInfo.of(Map.class);
     public static final TypeInfo<List> LIST = TypeInfo.of(List.class);
+
+    public static final TypeInfo<TypeInfo<?>> TYPE_INFO = new TypeParameterProvider<TypeInfo<?>>() {
+    }.createTypeInfo();
+
+    public static final TypeInfo<Class<?>> CLASS = new TypeParameterProvider<Class<?>>() {
+    }.createTypeInfo();
 
     public static final List<TypeInfo<?>> ALL = Collections.unmodifiableList(Collections3.listOf(
             BOXED_BOOLEAN, BOOLEAN,

@@ -31,6 +31,7 @@ import com.github.jonathanxd.config.CommonTypes;
 import com.github.jonathanxd.config.Key;
 import com.github.jonathanxd.config.Storage;
 import com.github.jonathanxd.iutils.type.TypeInfo;
+import com.github.jonathanxd.iutils.type.TypeInfoUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,6 +58,8 @@ public final class Serializers {
         Serializers.GLOBAL.registerAll(CommonTypes.ALL, new BasicSerializer<>());
         Serializers.GLOBAL.register(TypeInfo.of(List.class), new ListSerializer());
         Serializers.GLOBAL.register(TypeInfo.of(Map.class), new MapSerializer());
+        Serializers.GLOBAL.register(CommonTypes.TYPE_INFO, new TypeInfoSerializer());
+        Serializers.GLOBAL.register(CommonTypes.CLASS, new ClassSerializer());
     }
 
     /**
@@ -132,9 +135,9 @@ public final class Serializers {
     /**
      * Serialize the {@code value} to {@code key}.
      *
-     * @param value Value to serialize.
-     * @param key   Key to store serialized value.
-     *              @param typeInfo Type of expected value.
+     * @param value    Value to serialize.
+     * @param key      Key to store serialized value.
+     * @param typeInfo Type of expected value.
      */
     @SuppressWarnings("unchecked")
     public void serializeUnchecked(Object value, Key<?> key, TypeInfo<?> typeInfo) {
@@ -183,12 +186,22 @@ public final class Serializers {
     }
 
     /**
+     * Register a enum serializer to serialize value of type {@link T}.
+     *
+     * @param typeInfo Enum concrete type (example: {@code ElementType}).
+     * @param <T>      Enum type.
+     */
+    public <T extends Enum<T>> void registerEnumSerializer(TypeInfo<T> typeInfo) {
+        this.getSerializerMap().put(typeInfo, new EnumSerializer<>());
+    }
+
+    /**
      * Register a serializer of values of type {@code typeInfo}.
      *
      * @param typeInfo   Type of value that {@code serializer} can serialize and deserialize.
      * @param serializer Serializer.
      */
-    public void registerUnchecked(TypeInfo typeInfo, Serializer serializer) {
+    public void registerUnchecked(TypeInfo<?> typeInfo, Serializer serializer) {
         this.getSerializerMap().put(typeInfo, serializer);
     }
 
@@ -391,6 +404,52 @@ public final class Serializers {
             }
 
             return result;
+        }
+    }
+
+    static class ClassSerializer implements Serializer<Class<?>> {
+
+        @Override
+        public void serialize(Class<?> value, Key<Class<?>> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            storage.store(key, TypeInfo.of(String.class), value.getCanonicalName());
+        }
+
+        @Override
+        public Class<?> deserialize(Key<Class<?>> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            try {
+                return Class.forName(storage.getAs(key, String.class));
+            } catch (ClassNotFoundException e) {
+                throw new IllegalArgumentException("Cannot resolve class. key: '" + key + "'!", e);
+            }
+        }
+
+    }
+
+    static class TypeInfoSerializer implements Serializer<TypeInfo<?>> {
+
+        @Override
+        public void serialize(TypeInfo<?> value, Key<TypeInfo<?>> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            key.getAs(String.class).setValue(TypeInfoUtil.toFullString(value));
+        }
+
+        @Override
+        public TypeInfo<?> deserialize(Key<TypeInfo<?>> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            return TypeInfoUtil.fromFullString(key.getAs(String.class).getValue()).get(0);
+        }
+    }
+
+    static class EnumSerializer<T extends Enum<T>> implements Serializer<T> {
+
+        @Override
+        public void serialize(T value, Key<T> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            key.getAs(String.class).setValue(value.name());
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public T deserialize(Key<T> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            Class<?> typeClass = typeInfo.getTypeClass();
+            return Enum.valueOf((Class<T>) typeClass, key.getAs(String.class).getValue());
         }
     }
 }
