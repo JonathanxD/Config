@@ -1,5 +1,5 @@
 /*
- *      Config-Yaml - Yaml backend for Config <https://github.com/JonathanxD/Config/>
+ *      Config-Json - Json backend for Config <https://github.com/JonathanxD/Config/>
  *
  *         The MIT License (MIT)
  *
@@ -25,52 +25,71 @@
  *      OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *      THE SOFTWARE.
  */
-package com.github.jonathanxd.config.backend.yaml;
+package com.github.jonathanxd.config.backend.json;
 
-import com.github.jonathanxd.config.CommonTypes;
 import com.github.jonathanxd.config.backend.AbstractIOBackend;
 import com.github.jonathanxd.config.backend.ConfigIO;
-import com.github.jonathanxd.iutils.type.TypeInfo;
+import com.github.jonathanxd.iutils.exception.RethrowException;
 
-import org.yaml.snakeyaml.Yaml;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.ContainerFactory;
+import org.json.simple.parser.ContentHandler;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-/**
- * Yaml backend that uses {@link ConfigIO} to read and write configuration. Save and load operations
- * may throw {@link IOException}.
- */
-public class YamlBackend extends AbstractIOBackend {
+public class JsonBackend extends AbstractIOBackend {
 
-    private final Yaml yaml;
+    private final JSONParser parser;
 
-    /**
-     * Creates yaml backend.
-     *
-     * @param yaml     Yaml specification.
-     * @param configIO IO to read and write yaml.
-     */
-    public YamlBackend(Yaml yaml, ConfigIO configIO) {
-        super(configIO);
-        this.yaml = yaml;
+    public JsonBackend(JSONParser parser, ConfigIO io) {
+        super(io);
+        this.parser = parser;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void save(Map<String, Object> map, Writer writer) {
-        this.yaml.dump(map, writer);
+        try {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.putAll(map);
+            jsonObject.writeJSONString(writer);
+        } catch (IOException e) {
+            throw RethrowException.rethrow(e);
+        }
+
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public Map<String, Object> load(Reader reader) {
-        return (Map<String, Object>) this.yaml.load(reader);
+        try {
+            return (Map<String, Object>) parser.parse(reader, new MapContainerFactory());
+        } catch (IOException | ParseException e) {
+            throw RethrowException.rethrow(e);
+        }
     }
 
-    @Override
-    public boolean supports(TypeInfo<?> type) {
-        return CommonTypes.isValidBasicType(type);
+    private static final class MapContainerFactory implements ContainerFactory {
+
+        private MapContainerFactory() {
+        }
+
+        @Override
+        public Map createObjectContainer() {
+            return new HashMap();
+        }
+
+        @Override
+        public List creatArrayContainer() {
+            return new ArrayList();
+        }
     }
 }

@@ -1,5 +1,5 @@
 /*
- *      Config-Yaml - Yaml backend for Config <https://github.com/JonathanxD/Config/>
+ *      Config-Json - Json backend for Config <https://github.com/JonathanxD/Config/>
  *
  *         The MIT License (MIT)
  *
@@ -25,40 +25,42 @@
  *      OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *      THE SOFTWARE.
  */
-package com.github.jonathanxd.config.backend.yaml;
+package com.github.jonathanxd.config.backend.json.test;
 
-import com.github.jonathanxd.iutils.function.checked.supplier.ESupplier;
+import com.github.jonathanxd.config.Config;
+import com.github.jonathanxd.config.Key;
+import com.github.jonathanxd.config.backend.ConfigIO;
+import com.github.jonathanxd.config.backend.json.JsonBackend;
+import com.github.jonathanxd.iutils.box.IMutableBox;
+import com.github.jonathanxd.iutils.box.MutableBox;
 
-import org.yaml.snakeyaml.Yaml;
+import org.json.simple.parser.JSONParser;
+import org.junit.Assert;
+import org.junit.Test;
 
-import java.io.Reader;
-import java.io.Writer;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.function.Supplier;
+public class JsonBackendTest {
 
-/**
- * Yaml nio 2 path backend. The path must exists, otherwise {@link java.io.IOException} may be throw
- * by save and load operations.
- */
-public class YamlNioBackend extends YamlBackend {
-    /**
-     * Creates a yaml backend that saves and load yaml from a path.
-     *
-     * @param yaml    Yaml specification.
-     * @param path    Path to save and load yaml.
-     * @param charset Charset to be used to write and read yaml characters.
-     */
-    public YamlNioBackend(Yaml yaml, Path path, Charset charset) {
-        super(yaml, YamlNioBackend.getWriter(path, charset), YamlNioBackend.getReader(path, charset));
+    @Test
+    public void testToString() {
+        IMutableBox<String> box = new MutableBox<>();
+
+        JSONParser jsonParser = new JSONParser();
+
+        JsonBackend jsonBackend = new JsonBackend(jsonParser, ConfigIO.stringBox(box));
+
+        Config config = new Config(jsonBackend);
+        Key<String> key = config.getRootKey().getKey("backend", String.class);
+        key.setValue("Yaml backend");
+        config.save();
+
+        String first = box.get();
+
+        box.set("{\"backend\": \"Yaml backend Uhu\"}");
+
+        config.load();
+
+        Assert.assertEquals("{\"backend\":\"Yaml backend\"}", first);
+        Assert.assertEquals("Yaml backend Uhu", key.getValue());
     }
 
-    private static Supplier<Writer> getWriter(Path path, Charset charset) {
-        return (ESupplier<Writer>) () -> Files.newBufferedWriter(path, charset);
-    }
-
-    private static Supplier<Reader> getReader(Path path, Charset charset) {
-        return (ESupplier<Reader>) () -> Files.newBufferedReader(path, charset);
-    }
 }

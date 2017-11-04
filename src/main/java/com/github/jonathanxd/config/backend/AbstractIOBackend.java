@@ -1,5 +1,5 @@
 /*
- *      Config-Yaml - Yaml backend for Config <https://github.com/JonathanxD/Config/>
+ *      Config - Configuration library <https://github.com/JonathanxD/Config>
  *
  *         The MIT License (MIT)
  *
@@ -25,52 +25,58 @@
  *      OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *      THE SOFTWARE.
  */
-package com.github.jonathanxd.config.backend.yaml;
+package com.github.jonathanxd.config.backend;
 
-import com.github.jonathanxd.config.CommonTypes;
-import com.github.jonathanxd.config.backend.AbstractIOBackend;
-import com.github.jonathanxd.config.backend.ConfigIO;
-import com.github.jonathanxd.iutils.type.TypeInfo;
-
-import org.yaml.snakeyaml.Yaml;
+import com.github.jonathanxd.iutils.exception.RethrowException;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.Map;
 
-/**
- * Yaml backend that uses {@link ConfigIO} to read and write configuration. Save and load operations
- * may throw {@link IOException}.
- */
-public class YamlBackend extends AbstractIOBackend {
+public abstract class AbstractIOBackend implements Backend {
 
-    private final Yaml yaml;
+    private final ConfigIO io;
+
+    protected AbstractIOBackend(ConfigIO io) {
+        this.io = io;
+    }
+
+    @Override
+    public final Map<String, Object> load() {
+        try (Reader r = this.getIo().openReader()) {
+            return load(r);
+        } catch (IOException e) {
+            throw RethrowException.rethrow(e);
+        }
+    }
+
+    @Override
+    public final void save(Map<String, Object> map) {
+        try (Writer w = this.getIo().openWriter()) {
+            this.save(map, w);
+        } catch (IOException e) {
+            throw RethrowException.rethrow(e);
+        }
+    }
 
     /**
-     * Creates yaml backend.
+     * Loads configuration map from {@code reader}.
      *
-     * @param yaml     Yaml specification.
-     * @param configIO IO to read and write yaml.
+     * @param reader Reader of configuration.
+     * @return Configuration map read from {@code reader}.
      */
-    public YamlBackend(Yaml yaml, ConfigIO configIO) {
-        super(configIO);
-        this.yaml = yaml;
-    }
+    public abstract Map<String, Object> load(Reader reader);
 
-    @Override
-    public void save(Map<String, Object> map, Writer writer) {
-        this.yaml.dump(map, writer);
-    }
+    /**
+     * Saves configuration {@code map} to {@code writer}.
+     *
+     * @param map    Configuration map to writer.
+     * @param writer Writer of configuration.
+     */
+    public abstract void save(Map<String, Object> map, Writer writer);
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public Map<String, Object> load(Reader reader) {
-        return (Map<String, Object>) this.yaml.load(reader);
-    }
-
-    @Override
-    public boolean supports(TypeInfo<?> type) {
-        return CommonTypes.isValidBasicType(type);
+    private ConfigIO getIo() {
+        return this.io;
     }
 }

@@ -5,7 +5,7 @@ apply plugin: 'license'
 
 jar {
     manifest {
-        attributes 'Implementation-Title': 'Config-Yaml',
+        attributes 'Implementation-Title': 'Config-Json',
                 'Implementation-Version': project.version
     }
 }
@@ -17,7 +17,7 @@ repositories {
 
 dependencies {
     compile rootProject
-    compile 'org.yaml:snakeyaml:1.9'
+    compile "com.googlecode.json-simple:json-simple:1.1.1"
     testCompile group: 'junit', name:'junit', version: '4.11'
 }
 
@@ -37,9 +37,9 @@ artifacts {
 }
 
 license {
-    ext.name = 'Config-Yaml'
+    ext.name = 'Config-Json'
     ext.organization = 'TheRealBuggy/JonathanxD (https://github.com/JonathanxD/)'
-    ext.description = 'Yaml backend for Config'
+    ext.description = 'Json backend for Config'
     ext.url = 'https://github.com/JonathanxD/Config/'
     ext.year = Calendar.getInstance().get(Calendar.YEAR)
     ext.email = 'jonathan.scripter@programmer.net'

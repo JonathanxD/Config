@@ -1,3 +1,4 @@
 rootProject.name = 'Config'
 include 'Config-Yaml'
+include 'Config-Json'
 

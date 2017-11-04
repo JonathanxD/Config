@@ -29,7 +29,10 @@ package com.github.jonathanxd.config.backend.yaml.test;
 
 import com.github.jonathanxd.config.Config;
 import com.github.jonathanxd.config.Key;
+import com.github.jonathanxd.config.backend.ConfigIO;
 import com.github.jonathanxd.config.backend.yaml.YamlBackend;
+import com.github.jonathanxd.iutils.box.IMutableBox;
+import com.github.jonathanxd.iutils.box.MutableBox;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -43,7 +46,7 @@ public class YamlBackendTest {
 
     @Test
     public void testToString() {
-        StringWriter sw = new StringWriter();
+        IMutableBox<String> box = new MutableBox<>();
 
         DumperOptions dumperOptions = new DumperOptions();
 
@@ -52,22 +55,17 @@ public class YamlBackendTest {
 
         YamlBackend yamlBackend = new YamlBackend(
                 new Yaml(dumperOptions),
-                () -> {
-                    sw.getBuffer().setLength(0);
-                    return sw;
-                },
-                () -> new StringReader(sw.toString())
+                ConfigIO.stringBox(box)
         );
+
         Config config = new Config(yamlBackend);
         Key<String> key = config.getRootKey().getKey("backend", String.class);
         key.setValue("Yaml backend");
         config.save();
 
-        String first = sw.toString();
+        String first = box.get();
 
-        sw.getBuffer().setLength(0);
-
-        sw.append("backend: Yaml backend Uhu");
+        box.set("backend: Yaml backend Uhu");
 
         config.load();
 
