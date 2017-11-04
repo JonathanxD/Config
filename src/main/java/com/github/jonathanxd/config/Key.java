@@ -294,6 +294,22 @@ public class Key<T> {
     }
 
     /**
+     * Returns the original key that this key was based to emulate, or returns {@code this} if this
+     * is not an emulated key.
+     *
+     * @return Original key that this key was based to emulate, or returns {@code this} if this is
+     * not an emulated key.
+     */
+    public Key<?> getOriginalKeyOrThis() {
+        Key<?> originalKey = this.getOriginalKey();
+
+        if (originalKey == null)
+            return this;
+
+        return originalKey;
+    }
+
+    /**
      * Returns {@code true} if this key {@link Storage#exists(Key) exists} in {@link
      * Key#getStorage() storage}.
      *
