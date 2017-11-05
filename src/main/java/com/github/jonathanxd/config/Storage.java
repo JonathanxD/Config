@@ -132,7 +132,7 @@ public abstract class Storage {
 
             if (!backend.supports(typeInfo))
                 throw new UnsupportedValueTypeException("Cannot store key '" + key + "': Type '" +
-                        typeInfo + "' is not supported by backend '" + backend + "'");
+                        typeInfo + "' is not supported by backend '" + backend + "'. Register a serializer for this data type.");
 
             // The check is really needed?
             this.pushValue(key, this.checkType(value, typeInfo));
@@ -162,7 +162,7 @@ public abstract class Storage {
 
             if (!backend.supports(typeInfo))
                 throw new UnsupportedValueTypeException("Cannot fetch key '" + key + "': Type '" +
-                        typeInfo + "' is not supported by backend '" + backend + "'");
+                        typeInfo + "' is not supported by backend '" + backend + "'. Register a serializer for this data type.");
 
             return this.checkType(this.fetchValue(key), typeInfo);
         }

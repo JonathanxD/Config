@@ -135,7 +135,7 @@ public class CommonTypes {
                 || CommonTypes.isDouble(type)
                 //|| BOXED_VOID.isAssignableFrom(type)
                 //|| VOID.isAssignableFrom(type)
-                || CommonTypes.isObject(type)
+                //|| CommonTypes.isObject(type)
                 || CommonTypes.isString(type)
                 || CommonTypes.isValidMap(type)
                 || CommonTypes.isValidList(type);

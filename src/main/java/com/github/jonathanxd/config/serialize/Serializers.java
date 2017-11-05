@@ -310,7 +310,12 @@ public final class Serializers {
         @SuppressWarnings("unchecked")
         @Override
         public T deserialize(Key<T> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
-            String s = storage.fetchValue(key).toString();
+            Object value = storage.fetchValue(key);
+
+            if (value == null)
+                return null;
+
+            String s = value.toString();
 
             return (T) When.When(typeInfo,
                     When.Matches(CommonTypes::isBoolean, t -> Boolean.valueOf(s)),
