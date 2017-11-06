@@ -63,7 +63,7 @@ public class Config {
     /**
      * Serializers
      */
-    private final Serializers serializers = new Serializers();
+    private final Serializers serializers;
 
     /**
      * Root key.
@@ -81,7 +81,18 @@ public class Config {
      * @param backend Backend to save and load configuration.
      */
     public Config(Backend backend) {
+        this(backend, new Serializers());
+    }
+
+    /**
+     * Creates a configuration backing save and load operations to a {@link Backend}.
+     *
+     * @param backend     Backend to save and load configuration.
+     * @param serializers Serializers instance to use to manage serializers.
+     */
+    public Config(Backend backend, Serializers serializers) {
         this.backend = backend;
+        this.serializers = serializers;
         this.getBackend().registerSerializers(this.getSerializers());
     }
 
