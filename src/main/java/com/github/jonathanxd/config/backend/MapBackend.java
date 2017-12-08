@@ -27,7 +27,7 @@
  */
 package com.github.jonathanxd.config.backend;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -35,7 +35,7 @@ import java.util.Map;
  */
 public class MapBackend implements Backend {
 
-    private final Map<String, Object> backendMap = new HashMap<>();
+    private final Map<String, Object> backendMap = new LinkedHashMap<>();
 
     @Override
     public void save(Map<String, Object> map) {

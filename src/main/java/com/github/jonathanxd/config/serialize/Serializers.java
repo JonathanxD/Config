@@ -29,13 +29,28 @@ package com.github.jonathanxd.config.serialize;
 
 import com.github.jonathanxd.config.CommonTypes;
 import com.github.jonathanxd.config.Key;
+import com.github.jonathanxd.config.KeySpec;
 import com.github.jonathanxd.config.Storage;
 import com.github.jonathanxd.iutils.matching.When;
+import com.github.jonathanxd.iutils.text.ArgsAppliedText;
+import com.github.jonathanxd.iutils.text.CapitalizeComponent;
+import com.github.jonathanxd.iutils.text.Color;
+import com.github.jonathanxd.iutils.text.DecapitalizeComponent;
+import com.github.jonathanxd.iutils.text.LocalizableComponent;
+import com.github.jonathanxd.iutils.text.StringComponent;
+import com.github.jonathanxd.iutils.text.Style;
+import com.github.jonathanxd.iutils.text.Styles;
+import com.github.jonathanxd.iutils.text.Text;
+import com.github.jonathanxd.iutils.text.TextComponent;
+import com.github.jonathanxd.iutils.text.TextUtil;
+import com.github.jonathanxd.iutils.text.VariableComponent;
 import com.github.jonathanxd.iutils.type.TypeInfo;
 import com.github.jonathanxd.iutils.type.TypeInfoUtil;
+import com.github.jonathanxd.iutils.type.TypeParameterProvider;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -62,6 +77,8 @@ public final class Serializers {
         Serializers.GLOBAL.register(TypeInfo.of(Map.class), new MapSerializer());
         Serializers.GLOBAL.register(CommonTypes.TYPE_INFO, new TypeInfoSerializer());
         Serializers.GLOBAL.register(CommonTypes.CLASS, new ClassSerializer());
+        Serializers.GLOBAL.registerEnumSerializer(TypeInfo.of(TextSerializer.ComponentType.class));
+        Serializers.GLOBAL.register(CommonTypes.TEXT_COMPONENT, new TextSerializer());
     }
 
     /**
@@ -337,11 +354,11 @@ public final class Serializers {
         @Override
         public void serialize(Map value, Key<Map> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
 
-            Map<Object, Object> newMap = new HashMap<>();
+            Map<Object, Object> newMap = new LinkedHashMap<>();
             TypeInfo<?> keyType = typeInfo.getTypeParameter(0); // K
             TypeInfo<?> valueType = typeInfo.getTypeParameter(1); // V
 
-            Map<String, Object> temp = new HashMap<>();
+            Map<String, Object> temp = new LinkedHashMap<>();
             Storage newStorage = Storage.createMapStorage(key, temp);
 
             for (Map.Entry<?, ?> o : ((Map<?, ?>) value).entrySet()) {
@@ -364,7 +381,7 @@ public final class Serializers {
         @Override
         public Map deserialize(Key<Map> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
 
-            Map<Object, Object> newMap = new HashMap<>();
+            Map<Object, Object> newMap = new LinkedHashMap<>();
 
             Object value = storage.fetchValue(key);
 
@@ -411,6 +428,8 @@ public final class Serializers {
 
                 serializers.serializeUncheckedAndGet(o, newKey);
             }
+
+            value.size();
         }
 
         @Override
@@ -483,6 +502,215 @@ public final class Serializers {
         public T deserialize(Key<T> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
             Class<?> typeClass = typeInfo.getTypeClass();
             return Enum.valueOf((Class<T>) typeClass, key.getAs(String.class).getValue());
+        }
+    }
+
+    /**
+     * Serialize to a string using {@link TextUtil#toString(TextComponent)} and deserialize using
+     * {@link TextUtil#parse(String)}.
+     */
+    public static class TextAsStringSerializer implements Serializer<TextComponent> {
+
+        @Override
+        public void serialize(TextComponent value, Key<TextComponent> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            key.getAs(String.class).setValue(TextUtil.toString(value));
+        }
+
+        @Override
+        public TextComponent deserialize(Key<TextComponent> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            return TextUtil.parse(key.getAs(String.class).getValue());
+        }
+    }
+
+    /**
+     * Serialize to a Config-style text component.
+     */
+    public static class TextSerializer implements Serializer<TextComponent> {
+
+        private static final KeySpec<ComponentType> TYPE = KeySpec.create("componentType", ComponentType.class);
+        private static final KeySpec<Map<String, TextComponent>> ARGS = KeySpec.create("args",
+                new TypeParameterProvider<Map<String, TextComponent>>() {
+                }.createTypeInfo());
+        private static final KeySpec<TextComponent> TEXT = KeySpec.create("text", TextComponent.class);
+        private static final KeySpec<String> STRING_TEXT = KeySpec.create("text", String.class);
+
+        private static final KeySpec<String> LOCALE = KeySpec.create("locale", String.class);
+        private static final KeySpec<List<TextComponent>> CHILDREN = KeySpec.create("children",
+                new TypeParameterProvider<List<TextComponent>>() {
+                }.createTypeInfo());
+
+        private static final KeySpec<String> VARIABLE = KeySpec.create("variable", String.class);
+        private static final KeySpec<String> LOCALIZABLE = KeySpec.create("localizable", String.class);
+
+        @Override
+        public void serialize(TextComponent value, Key<TextComponent> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            ComponentType componentType = When.When(value,
+                    When.InstanceOf(CapitalizeComponent.class, component -> ComponentType.Capitalize),
+                    When.InstanceOf(DecapitalizeComponent.class, component -> ComponentType.Decapitalize),
+                    When.InstanceOf(ArgsAppliedText.class, component -> ComponentType.ArgsApplied),
+                    When.InstanceOf(StringComponent.class, component -> ComponentType.String),
+                    When.InstanceOf(VariableComponent.class, component -> ComponentType.Variable),
+                    When.InstanceOf(LocalizableComponent.class, component -> ComponentType.Localizable),
+                    When.InstanceOf(Color.class, component -> ComponentType.Color),
+                    When.InstanceOf(Style.class, component -> ComponentType.Style),
+                    When.InstanceOf(Text.class, component -> ComponentType.Text),
+                    When.Else(component -> {
+                        throw new UnsupportedOperationException("Cannot serialize component: '" + value + "'!");
+                    })
+            ).evaluate().getValue();
+
+            key.get(TYPE).setValue(componentType);
+
+            switch (componentType) {
+                case Capitalize: {
+                    key.get(TEXT).setValue(((CapitalizeComponent) value).getTextComponent());
+                    break;
+                }
+                case Decapitalize: {
+                    key.get(TEXT).setValue(((DecapitalizeComponent) value).getTextComponent());
+                    break;
+                }
+                case ArgsApplied: {
+                    key.get(ARGS).setValue(((ArgsAppliedText) value).getArgs());
+                    key.get(TEXT).setValue(((ArgsAppliedText) value).getComponent());
+                    break;
+                }
+                case String: {
+                    key.get(STRING_TEXT).setValue(((StringComponent) value).getText());
+                    break;
+                }
+                case Variable: {
+                    key.get(VARIABLE).setValue(((VariableComponent) value).getVariable());
+                    break;
+                }
+                case Localizable: {
+                    key.get(LOCALIZABLE).setValue(((LocalizableComponent) value).getLocalization());
+                    String locale = ((LocalizableComponent) value).getLocale();
+                    if (locale != null) {
+                        key.get(LOCALE).setValue(locale);
+                    }
+                    break;
+                }
+                case Color: {
+                    Color color = (Color) value;
+                    key.getKey("name", String.class).setValue((color).getName());
+                    key.getKey("red", Integer.TYPE).setValue((color).getR());
+                    key.getKey("green", Integer.TYPE).setValue((color).getG());
+                    key.getKey("blue", Integer.TYPE).setValue((color).getB());
+                    key.getKey("alpha", Float.TYPE).setValue((color).getA());
+
+                    break;
+                }
+                case Style: {
+                    Style style = (Style) value;
+                    boolean isReset =
+                            !(style.isUnderline() || style.isBold() || style.isStrikeThrough() || style.isObfuscated() || style.isItalic());
+                    key.getKey("reset", Boolean.TYPE).setValue(isReset);
+
+                    if (!isReset) {
+                        if (style.isUnderline())
+                            key.getKey("underline", Boolean.TYPE).setValue(true);
+                        if (style.isBold())
+                            key.getKey("bold", Boolean.TYPE).setValue(true);
+                        if (style.isStrikeThrough())
+                            key.getKey("strikeThrough", Boolean.TYPE).setValue(true);
+                        if (style.isObfuscated())
+                            key.getKey("obfuscated", Boolean.TYPE).setValue(true);
+                        if (style.isItalic())
+                            key.getKey("italic", Boolean.TYPE).setValue(true);
+                    }
+                    break;
+                }
+                case Text: {
+                    key.get(CHILDREN).setValue(((Text) value).getComponents());
+                    break;
+                }
+                default: {
+                    throw new UnsupportedOperationException("Cannot serialize component of type: '" + componentType.name() + "'!");
+                }
+            }
+
+        }
+
+        @Override
+        public TextComponent deserialize(Key<TextComponent> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            ComponentType type = key.get(TYPE).getValue();
+
+            switch (type) {
+                case Capitalize: {
+                    return CapitalizeComponent.of(key.get(TEXT).getValue());
+                }
+                case Decapitalize: {
+                    return DecapitalizeComponent.of(key.get(TEXT).getValue());
+                }
+                case ArgsApplied: {
+                    Map<String, TextComponent> args = key.get(ARGS).getValue();
+                    return key.get(TEXT).getValue().apply(args);
+                }
+                case String: {
+                    return Text.single(key.get(STRING_TEXT).getValue());
+                }
+                case Variable: {
+                    return Text.variable(key.get(VARIABLE).getValue());
+                }
+                case Localizable: {
+                    String localizable = key.get(LOCALIZABLE).getValue();
+                    String locale = key.get(LOCALE).getValueOr(null);
+                    return LocalizableComponent.of(locale, localizable);
+                }
+                case Color: {
+                    String name = key.getKey("name", String.class).getValue();
+                    Color byName = Color.getByName(name);
+                    Key<Integer> redKey = key.getKey("red", Integer.TYPE);
+                    Key<Integer> greenKey = key.getKey("green", Integer.TYPE);
+                    Key<Integer> blueKey = key.getKey("blue", Integer.TYPE);
+                    Key<Float> alphaKey = key.getKey("alpha", Float.TYPE);
+
+                    if (byName != null
+                            && (!redKey.exists() || !greenKey.exists() || !blueKey.exists()))
+                        return byName;
+
+                    int red = redKey.getValue();
+                    int green = greenKey.getValue();
+                    int blue = blueKey.getValue();
+                    float alpha = alphaKey.getValueOr(1.0F);
+
+                    return Color.createColor(name, red, green, blue, alpha);
+                }
+                case Style: {
+                    boolean reset = key.getKey("reset", Boolean.TYPE).getValue();
+
+                    if (reset)
+                        return Styles.RESET;
+
+                    boolean underline = key.getKey("underline", Boolean.TYPE).getValueOr(Boolean.FALSE);
+                    boolean bold = key.getKey("bold", Boolean.TYPE).getValueOr(Boolean.FALSE);
+                    boolean strikeThrough = key.getKey("strikeThrough", Boolean.TYPE).getValueOr(Boolean.FALSE);
+                    boolean obfuscated = key.getKey("obfuscated", Boolean.TYPE).getValueOr(Boolean.FALSE);
+                    boolean italic = key.getKey("italic", Boolean.TYPE).getValueOr(Boolean.FALSE);
+
+                    return Style.createStyle(obfuscated, bold, strikeThrough, underline, italic);
+                }
+                case Text: {
+                    List<TextComponent> value = key.get(CHILDREN).getValue();
+                    return Text.of(value);
+                }
+                default: {
+                    throw new UnsupportedOperationException("Cannot deserialize component of type: '" + type.name() + "'!");
+                }
+            }
+        }
+
+        public enum ComponentType {
+            Capitalize,
+            Decapitalize,
+            ArgsApplied,
+            String,
+            Variable,
+            Localizable,
+            Color,
+            Style,
+            Text
         }
     }
 }

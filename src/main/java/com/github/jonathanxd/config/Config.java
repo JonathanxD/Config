@@ -32,7 +32,7 @@ import com.github.jonathanxd.config.serialize.Serializers;
 import com.github.jonathanxd.iutils.type.TypeInfo;
 
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -53,7 +53,7 @@ public class Config {
     /**
      * Root map
      */
-    private final Map<String, Object> map = new HashMap<>();
+    private final Map<String, Object> map = new LinkedHashMap<>();
 
     /**
      * Configuration storage
@@ -127,7 +127,7 @@ public class Config {
      * Saves the configuration.
      */
     public void save() {
-        this.backend.save(Collections.unmodifiableMap(new HashMap<>(this.map)));
+        this.backend.save(Collections.unmodifiableMap(new LinkedHashMap<>(this.map)));
     }
 
     /**

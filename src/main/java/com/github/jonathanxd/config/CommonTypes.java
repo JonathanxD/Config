@@ -28,6 +28,7 @@
 package com.github.jonathanxd.config;
 
 import com.github.jonathanxd.iutils.collection.Collections3;
+import com.github.jonathanxd.iutils.text.TextComponent;
 import com.github.jonathanxd.iutils.type.TypeInfo;
 import com.github.jonathanxd.iutils.type.TypeParameterProvider;
 
@@ -62,6 +63,7 @@ public class CommonTypes {
 
     public static final TypeInfo<Object> OBJECT = TypeInfo.of(Object.class);
     public static final TypeInfo<String> STRING = TypeInfo.of(String.class);
+    public static final TypeInfo<TextComponent> TEXT_COMPONENT = TypeInfo.of(TextComponent.class);
 
     public static final TypeInfo<Map> MAP = TypeInfo.of(Map.class);
     public static final TypeInfo<List> LIST = TypeInfo.of(List.class);

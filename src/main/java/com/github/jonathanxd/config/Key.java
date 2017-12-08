@@ -30,7 +30,7 @@ package com.github.jonathanxd.config;
 import com.github.jonathanxd.iutils.string.ToStringHelper;
 import com.github.jonathanxd.iutils.type.TypeInfo;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -61,6 +61,10 @@ import java.util.function.Supplier;
  *
  * Keys are identified by {@link #getConfig() config}, {@link #getParent() parent key} and {@link
  * #getName() key name}.
+ *
+ * Some configuration APIs allows you to create {@code Section} instances where keys reside, in
+ * {@code Config}, Keys reside in {@link Storage} and sections are simple keys with {@link Void}
+ * {@link Key#typeInfo type}.
  *
  * @param <T> Value type.
  * @see Storage
@@ -238,6 +242,17 @@ public class Key<T> {
     }
 
     /**
+     * Creates a new key that is intended only to be used to create other keys from it (like {@code
+     * Section} of other configuration APIs).
+     *
+     * @param name Name of the key section.
+     * @return A new key that is intended only to be used to create other keys from it.
+     */
+    public Key<Void> getKeySection(String name) {
+        return this.getKey(name, Void.TYPE);
+    }
+
+    /**
      * Creates a new {@link Key key} of type {@link V} linked to a {@link Storage storage}, this
      * child key overwrite the current value.
      *
@@ -269,7 +284,7 @@ public class Key<T> {
 
         if (!this.getStorage().exists(this)
                 || !((o = this.getStorage().fetchValue(this)) instanceof Map<?, ?>))
-            map = new HashMap<>();
+            map = new LinkedHashMap<>();
         else
             map = (Map<String, Object>) o;
 
@@ -436,12 +451,15 @@ public class Key<T> {
 
     @Override
     public int hashCode() {
+        if (this.isEmulated())
+            return super.hashCode();
+
         return Objects.hash(this.getConfig(), this.getParent(), this.getName());
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof Key<?>))
+        if (this.isEmulated() || !(obj instanceof Key<?>))
             return super.equals(obj);
 
         Key<?> other = (Key<?>) obj;

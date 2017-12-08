@@ -33,7 +33,6 @@ import com.github.jonathanxd.iutils.function.stream.BiStreams;
 import com.github.jonathanxd.iutils.type.TypeInfo;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,7 +60,7 @@ public abstract class Storage {
     }
 
     /**
-     * Creates a map storage that stores values in a {@link HashMap}.
+     * Creates a map storage that stores values in a {@link LinkedHashMap}.
      *
      * This method calls {@link #createMapStorage(Config, Map)} with {@link Key#getConfig() config}
      * of {@code key}.
@@ -70,7 +69,7 @@ public abstract class Storage {
      * @return Map Storage that stores values in {@code map}.
      */
     public static Storage createMapStorage(Key<?> key) {
-        return Storage.createMapStorage(key.getConfig(), new HashMap<>());
+        return Storage.createMapStorage(key.getConfig(), new LinkedHashMap<>());
     }
 
     /**
@@ -342,7 +341,7 @@ public abstract class Storage {
         AutoPushMapStorage(Key<?> key) {
             this.key = key;
             this.config = this.key.getConfig();
-            this.key.getStorage().pushValue(key, new HashMap<>());
+            this.key.getStorage().pushValue(key, new LinkedHashMap<>());
         }
 
         @SuppressWarnings("unchecked")
@@ -350,7 +349,7 @@ public abstract class Storage {
             Storage storage = this.key.getStorage();
 
             if (!storage.exists(this.key))
-                storage.pushValue(this.key, new HashMap<>());
+                storage.pushValue(this.key, new LinkedHashMap<>());
 
             return (Map<String, Object>) storage.fetchValue(this.key);
         }
