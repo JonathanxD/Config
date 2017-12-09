@@ -36,14 +36,14 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Configuration front-end. Values are stored in a {@link Storage.MapStorage MapStorage}, and later
- * saved and loaded from {@link Backend} through {@link #save()} and {@link #load()} in form of a
- * {@link Map}.
+ * Configuration front-end. Values are stored in this {@link Storage ConfigStorage}, and later saved
+ * and loaded from {@link Backend} through {@link #save()} and {@link #load()} in form of a {@link
+ * Map}.
  *
  * Keys uses {@link Storage} to save and retrieve their values, also {@link Storage} is used by
  * serialization and deserialization of objects.
  */
-public class Config {
+public class Config extends Storage {
 
     /**
      * Root Map type.
@@ -54,11 +54,6 @@ public class Config {
      * Root map
      */
     private final Map<String, Object> map = new LinkedHashMap<>();
-
-    /**
-     * Configuration storage
-     */
-    private final Storage storage = Storage.createMapStorage(this, this.map);
 
     /**
      * Serializers
@@ -138,6 +133,37 @@ public class Config {
         this.map.putAll(this.backend.load());
     }
 
+    // Storage
+
+
+    @Override
+    public void pushValue(Key<?> key, Object value) {
+        this.map.put(key.getName(), value);
+    }
+
+    @Override
+    public Object fetchValue(Key<?> key) {
+        if (!this.exists(key))
+            throw new KeyNotFoundException(key);
+
+        return this.map.get(key.getName());
+    }
+
+    @Override
+    public boolean exists(Key<?> key) {
+        return this.map.containsKey(key.getName());
+    }
+
+    @Override
+    public Config getConfig() {
+        return this;
+    }
+
+    @Override
+    public String toString() {
+        return "Config[entries=" + this.map.size() + "]";
+    }
+
     /**
      * Root configuration key, the {@link Storage storage} of this key is the same as {@link Config
      * enclosing config}, children uses the same {@link Storage storage} as this key, but sets the
@@ -151,7 +177,7 @@ public class Config {
          * @param config Configuration,
          */
         RootKey(Config config) {
-            super(config, null, null, TYPE, Config.this.storage, null);
+            super(config, null, "root", TYPE, Config.this, null);
         }
 
         @Override

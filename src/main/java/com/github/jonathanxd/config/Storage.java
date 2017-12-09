@@ -42,6 +42,9 @@ import java.util.stream.Collectors;
 /**
  * Value storage class, this class serialize and pushes the value, fetches and deserialize the
  * value, different implements pushes and fetches from different sources.
+ *
+ * Storage does not implement the key logic, so storing a key means that it will directly be stored
+ * in the Storage without caring about the path of the key.
  */
 public abstract class Storage {
 
@@ -50,6 +53,8 @@ public abstract class Storage {
      *
      * This method calls {@link #createMapStorage(Config, Map)} with {@link Key#getConfig() config}
      * of {@code key}.
+     *
+     * Used in serialization process.
      *
      * @param key Key to get {@link Config configuration}.
      * @param map Map to store values.
@@ -65,6 +70,8 @@ public abstract class Storage {
      * This method calls {@link #createMapStorage(Config, Map)} with {@link Key#getConfig() config}
      * of {@code key}.
      *
+     * Used in serialization process.
+     *
      * @param key Key to get {@link Config configuration}.
      * @return Map Storage that stores values in {@code map}.
      */
@@ -75,12 +82,45 @@ public abstract class Storage {
     /**
      * Creates a map storage that stores values in {@code map}.
      *
+     * Used in serialization process.
+     *
      * @param config Configuration
      * @param map    Map to store values.
      * @return Map Storage that stores values in {@code map}.
      */
     public static Storage createMapStorage(Config config, Map<String, Object> map) {
         return new MapStorage(config, map);
+    }
+
+    /**
+     * Creates an inner storage, an inner storage stores the value in a new section of the {@code
+     * outerStorage} using {@code key}, but without linking directly to the object that this storage
+     * stores to.
+     *
+     * An inner storage is like a storage with a path to where the value should be stored, example,
+     * suppose that you want to store value {@code B} in path {@code a.c}, and every path entry is a
+     * map entry, so {@code a} is a map entry and {@code c} is a map entry inside map entry {@code
+     * a}, the inner storage is a link to the entry {@code c}, and outer storage is the link to
+     * entry {@code a}, but neither the inner nor outer, references to the storage, they references
+     * to the {@code path} {@code a.c}. The path in this case, is the {@code key}.
+     *
+     * @param key          Key to be used to store the section in {@code outerStorage}.
+     * @param outerStorage Outer storage.
+     * @return An inner storage that stores value in a new section.
+     */
+    public static Storage createInnerStorage(Key<?> key, Storage outerStorage) {
+        return new InnerStorage(key, outerStorage);
+    }
+
+    /**
+     * In this case, {@code outerStorage} is the {@code key} {@link Key#getStorage() storage}.
+     *
+     * @param key Key to be used to store the section in {@code outerStorage}.
+     * @return An inner storage that stores value in a new section.
+     * @see #createInnerStorage(Key, Storage)
+     */
+    public static Storage createInnerStorage(Key<?> key) {
+        return new InnerStorage(key, key.getStorage());
     }
 
     /**
@@ -300,6 +340,8 @@ public abstract class Storage {
 
         @Override
         public Object fetchValue(Key<?> key) {
+            if (!this.exists(key))
+                throw new KeyNotFoundException(key);
             return this.map.get(key.getName());
         }
 
@@ -315,6 +357,86 @@ public abstract class Storage {
         @Override
         public boolean exists(Key<?> key) {
             return this.getMap().containsKey(key.getName());
+        }
+
+        @Override
+        public String toString() {
+            return "MapStorage[config='" + this.config + "', map=" + this.getMap() + "]";
+        }
+    }
+
+    /**
+     * Storage that references to a section in an outer storage.
+     *
+     * @see Storage#createInnerStorage(Key, Storage)
+     */
+    static class InnerStorage extends Storage {
+
+        /**
+         * Path key
+         */
+        private final Key<?> key;
+
+        /**
+         * Outer storage.
+         */
+        private final Storage outer;
+
+        /**
+         * Creates a storage that references to a section in {@code outer} storage.
+         *
+         * @param key   Key to be used as path.
+         * @param outer Outer storage.
+         * @see Storage#createInnerStorage(Key, Storage)
+         */
+        InnerStorage(Key<?> key, Storage outer) {
+            this.key = key;
+            this.outer = outer;
+            this.createIfNeeded();
+        }
+
+        private void createIfNeeded() {
+            if (!this.outer.exists(this.key)) {
+                LinkedHashMap<String, Object> newMap = new LinkedHashMap<>();
+                this.outer.pushValue(this.key, newMap);
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public void pushValue(Key<?> key, Object value) {
+            this.getMap().put(key.getName(), value);
+        }
+
+        @Override
+        public Object fetchValue(Key<?> key) {
+            if (!this.exists(key))
+                throw new KeyNotFoundException(key);
+
+            return this.getMap().get(key.getName());
+        }
+
+        @Override
+        public Config getConfig() {
+            return this.key.getConfig();
+        }
+
+        @SuppressWarnings("unchecked")
+        public Map<String, Object> getMap() {
+            this.createIfNeeded();
+            return (Map<String, Object>) this.outer.fetchValue(this.key);
+        }
+
+        @Override
+        public boolean exists(Key<?> key) {
+            return this.getMap().containsKey(key.getName());
+        }
+
+        @Override
+        public String toString() {
+            return "InnerStorage[key='" + KeyUtil.getPathAsString(this.key) + "', outer='" + this.outer + "', map=" +
+                    (this.outer.exists(this.key) ? this.getMap() : "absent") +
+                    "]";
         }
     }
 
@@ -366,6 +488,9 @@ public abstract class Storage {
 
         @Override
         public Object fetchValue(Key<?> key) {
+            if (!this.exists(key))
+                throw new KeyNotFoundException(key);
+
             return this.getMap().get(key.getName());
         }
 
@@ -374,6 +499,10 @@ public abstract class Storage {
             return this.config;
         }
 
+        @Override
+        public String toString() {
+            return "AutoPushStorage[key='" + KeyUtil.getPathAsString(this.key) + "']";
+        }
     }
 
     /**
@@ -414,15 +543,18 @@ public abstract class Storage {
         public ListStorage(Key<?> key) {
             this.key = key;
             this.config = this.getKey().getConfig();
+            this.createIfNeeded();
+        }
+
+        private void createIfNeeded() {
+            if (!this.key.getStorage().exists(this.key))
+                this.key.getStorage().pushValue(this.key, new ArrayList<>());
         }
 
         @SuppressWarnings("unchecked")
         private List<Object> getList() {
+            this.createIfNeeded();
             Storage storage = this.key.getStorage();
-
-            if (!storage.exists(this.key))
-                storage.pushValue(this.key, new ArrayList<>());
-
             return (List<Object>) storage.fetchValue(this.key);
         }
 
@@ -435,8 +567,8 @@ public abstract class Storage {
 
         @Override
         public Object fetchValue(Key<?> key) {
-            if (!this.map.containsKey(key))
-                throw new IllegalStateException("Cannot fetch value: No value stored for key: '" + key + "'.");
+            if (!this.exists(key))
+                throw new KeyNotFoundException(key);
 
             return this.map.get(key);
         }
@@ -457,6 +589,11 @@ public abstract class Storage {
         @Override
         public Config getConfig() {
             return this.config;
+        }
+
+        @Override
+        public String toString() {
+            return "ListStorage[key='" + KeyUtil.getPathAsString(this.key) + "']";
         }
     }
 }

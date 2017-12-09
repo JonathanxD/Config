@@ -72,8 +72,9 @@ public class CfgTest {
         Key<String> name = rootKey.getKey("name", TypeInfo.of(String.class)).getKey("n", String.class);
 
 
-        System.out.println(name.getValue());
+        Assert.assertFalse(name.exists());
         name.setValue("ultra[red]");
+        Assert.assertTrue(name.exists());
         System.out.println(name.getValue());
         config.save();
 

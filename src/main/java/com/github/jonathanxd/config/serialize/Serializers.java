@@ -678,7 +678,7 @@ public final class Serializers {
                     return Color.createColor(name, red, green, blue, alpha);
                 }
                 case Style: {
-                    boolean reset = key.getKey("reset", Boolean.TYPE).getValue();
+                    boolean reset = key.getKey("reset", Boolean.TYPE).getValueOr(Boolean.FALSE);
 
                     if (reset)
                         return Styles.RESET;

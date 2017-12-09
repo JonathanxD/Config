@@ -30,7 +30,6 @@ package com.github.jonathanxd.config;
 import com.github.jonathanxd.iutils.string.ToStringHelper;
 import com.github.jonathanxd.iutils.type.TypeInfo;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -47,7 +46,8 @@ import java.util.function.Supplier;
  * Emulated key is a key that represents something that cannot be expressed in configuration,
  * example, a key to an entry of an element of list, or a key to an entry of key or value of a
  * {@link Map map}. To determine whether a key is emulated or not, use {@link Key#isEmulated()}. And
- * to get which key was used to create emulated key, use {@link #getOriginalKey()}.
+ * to get which key was used to create emulated key, use {@link #getOriginalKey()}. Emulated keys
+ * are unique and are not equal to any other key than itself.
  *
  * {@link Key} fetches and pushes the value to the {@link Storage storage} and create child keys
  * linked to another {@link Storage storage} that fetches and pushes values to current {@link
@@ -278,19 +278,7 @@ public class Key<T> {
      */
     @SuppressWarnings("unchecked")
     public <V> Key<V> getKey(String name, TypeInfo<V> typeInfo) {
-        Map<String, Object> map;
-
-        Object o;
-
-        if (!this.getStorage().exists(this)
-                || !((o = this.getStorage().fetchValue(this)) instanceof Map<?, ?>))
-            map = new LinkedHashMap<>();
-        else
-            map = (Map<String, Object>) o;
-
-        Storage storage = Storage.createMapStorage(this.config, map);
-
-        this.getStorage().pushValue(this, map);
+        Storage storage = Storage.createInnerStorage(this);
 
         return new Key<>(this.getConfig(), this, name, typeInfo, storage, null);
     }
@@ -477,7 +465,7 @@ public class Key<T> {
                 .add("type", this.getTypeInfo())
                 .add("storage", this.getStorage())
                 .add("config", this.getConfig())
-                .addOptional("parent", Optional.ofNullable(this.getParent()).map(Object::toString))
+                .addOptional("parent", Optional.ofNullable(this.getParent()))
                 .toString();
     }
 }
