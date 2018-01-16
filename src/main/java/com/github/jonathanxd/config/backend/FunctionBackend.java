@@ -35,29 +35,29 @@ import java.util.function.Supplier;
  * Backend that delegates save and load to {@link Consumer} and {@link Supplier}.
  */
 public class FunctionBackend implements Backend {
-    private final Consumer<Map<String, Object>> saver;
-    private final Supplier<Map<String, Object>> loader;
+    private final Consumer<Map<Object, Object>> saver;
+    private final Supplier<Map<Object, Object>> loader;
 
-    public FunctionBackend(Consumer<Map<String, Object>> saver, Supplier<Map<String, Object>> loader) {
+    public FunctionBackend(Consumer<Map<Object, Object>> saver, Supplier<Map<Object, Object>> loader) {
         this.saver = saver;
         this.loader = loader;
     }
 
-    public Consumer<Map<String, Object>> getSaver() {
+    public Consumer<Map<Object, Object>> getSaver() {
         return this.saver;
     }
 
-    public Supplier<Map<String, Object>> getLoader() {
+    public Supplier<Map<Object, Object>> getLoader() {
         return this.loader;
     }
 
     @Override
-    public void save(Map<String, Object> map) {
+    public void save(Map<Object, Object> map) {
         this.getSaver().accept(map);
     }
 
     @Override
-    public Map<String, Object> load() {
+    public Map<Object, Object> load() {
         return this.getLoader().get();
     }
 }

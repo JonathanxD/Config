@@ -52,7 +52,7 @@ public class SimpleTest {
         this.registerSerializers(config);
 
         // Keys
-        Key<Map<String, Object>> rootKey = config.getRootKey();
+        Key<Map<Object, Object>> rootKey = config.getRootKey();
         Key<Map<Person, Score>> scoreKey = rootKey.getKey("score", new TypeParameterProvider<Map<Person, Score>>(){}.createTypeInfo());
         Key<My> myKey = rootKey.getKey("myEnum", new TypeParameterProvider<My>(){}.createTypeInfo());
         // /Keys
@@ -109,14 +109,14 @@ public class SimpleTest {
         }
 
         @Override
-        public void save(Map<String, Object> map) {
+        public void save(Map<Object, Object> map) {
             yamlStr.set(yaml.dump(map));
         }
 
         @SuppressWarnings("unchecked")
         @Override
-        public Map<String, Object> load() {
-            return (Map<String, Object>) yaml.load(yamlStr.get());
+        public Map<Object, Object> load() {
+            return (Map<Object, Object>) yaml.load(yamlStr.get());
         }
 
         void setYaml(String yaml) {

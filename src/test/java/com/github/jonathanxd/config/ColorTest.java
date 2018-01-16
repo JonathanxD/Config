@@ -51,7 +51,7 @@ public class ColorTest {
         this.registerSerializers(config);
 
         // Keys
-        Key<Map<String, Object>> rootKey = config.getRootKey();
+        Key<Map<Object, Object>> rootKey = config.getRootKey();
         Key<Void> messagesSection = rootKey.getKey("messages", Void.TYPE); // Void key is same as a Section
         Key<TextComponent> welcomeMessage = messagesSection.getKey("welcome", TextComponent.class);
         // /Keys
@@ -107,14 +107,14 @@ public class ColorTest {
         }
 
         @Override
-        public void save(Map<String, Object> map) {
+        public void save(Map<Object, Object> map) {
             yamlStr.set(yaml.dump(map));
         }
 
         @SuppressWarnings("unchecked")
         @Override
-        public Map<String, Object> load() {
-            return (Map<String, Object>) yaml.load(yamlStr.get());
+        public Map<Object, Object> load() {
+            return (Map<Object, Object>) yaml.load(yamlStr.get());
         }
 
         String getYaml() {

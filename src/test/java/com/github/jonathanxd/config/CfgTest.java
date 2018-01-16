@@ -52,22 +52,22 @@ public class CfgTest {
     @Test
     public void test() {
         Config config = new Config(new Backend() {
-            Map<String, Object> map;
+            Map<Object, Object> map;
 
             @Override
-            public void save(Map<String, Object> map) {
+            public void save(Map<Object, Object> map) {
                 this.map = map;
                 System.out.println("SAVE -> " + map);
             }
 
             @Override
-            public Map<String, Object> load() {
+            public Map<Object, Object> load() {
                 System.out.println(" LOAD ");
                 return this.map;
             }
         });
 
-        Key<Map<String, Object>> rootKey = config.getRootKey();
+        Key<Map<Object, Object>> rootKey = config.getRootKey();
 
         Key<String> name = rootKey.getKey("name", TypeInfo.of(String.class)).getKey("n", String.class);
 
@@ -108,22 +108,22 @@ public class CfgTest {
     @Test
     public void testMap() {
         Config config = new Config(new Backend() {
-            Map<String, Object> map;
+            Map<Object, Object> map;
 
             @Override
-            public void save(Map<String, Object> map) {
+            public void save(Map<Object, Object> map) {
                 this.map = map;
                 System.out.println("SAVE -> " + map);
             }
 
             @Override
-            public Map<String, Object> load() {
+            public Map<Object, Object> load() {
                 System.out.println(" LOAD ");
                 return this.map;
             }
         });
 
-        Key<Map<String, Object>> rootKey = config.getRootKey();
+        Key<Map<Object, Object>> rootKey = config.getRootKey();
 
         Map<String, String> mapi = new HashMap<>();
 
@@ -159,9 +159,9 @@ public class CfgTest {
                 new FunctionBackend(map -> {
                     yamlStr.set(yaml.dump(map));
                     System.out.println("Yaml = " + yamlStr.get() + "                  [action=SAVE]");
-                }, () -> (Map<String, Object>) yaml.load(yamlStr.get())));
+                }, () -> (Map<Object, Object>) yaml.load(yamlStr.get())));
 
-        Key<Map<String, Object>> rootKey = config.getRootKey();
+        Key<Map<Object, Object>> rootKey = config.getRootKey();
 
         Map<String, String> mapi = new HashMap<>();
 
@@ -221,9 +221,9 @@ public class CfgTest {
                 new FunctionBackend(map -> {
                     yamlStr.set(yaml.dump(map));
                     System.out.println("Yaml = " + yamlStr.get() + "                  [action=SAVE]");
-                }, () -> (Map<String, Object>) yaml.load(yamlStr.get())));
+                }, () -> (Map<Object, Object>) yaml.load(yamlStr.get())));
 
-        Key<Map<String, Object>> rootKey = config.getRootKey();
+        Key<Map<Object, Object>> rootKey = config.getRootKey();
 
         Map<String, String> mapi = new HashMap<>();
 
@@ -276,7 +276,7 @@ public class CfgTest {
     }
 
     private void read(Config config) {
-        Key<Map<String, Object>> rootKey = config.getRootKey();
+        Key<Map<Object, Object>> rootKey = config.getRootKey();
 
         Key<List<Map<String, String>>> oops = rootKey.getKey("oops",
                 new TypeParameterProvider<List<Map<String, String>>>() {

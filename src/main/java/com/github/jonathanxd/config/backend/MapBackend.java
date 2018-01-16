@@ -35,20 +35,20 @@ import java.util.Map;
  */
 public class MapBackend implements Backend {
 
-    private final Map<String, Object> backendMap = new LinkedHashMap<>();
+    private final Map<Object, Object> backendMap = new LinkedHashMap<>();
 
     @Override
-    public void save(Map<String, Object> map) {
+    public void save(Map<Object, Object> map) {
         this.backendMap.clear();
         this.backendMap.putAll(map);
     }
 
     @Override
-    public Map<String, Object> load() {
+    public Map<Object, Object> load() {
         return this.backendMap;
     }
 
-    public Map<String, Object> getBackendMap() {
+    public Map<Object, Object> getBackendMap() {
         return this.backendMap;
     }
 }
