@@ -28,6 +28,7 @@
 package com.github.jonathanxd.config.serialize;
 
 import com.github.jonathanxd.config.Key;
+import com.github.jonathanxd.config.SerializationException;
 import com.github.jonathanxd.config.Storage;
 import com.github.jonathanxd.iutils.type.TypeInfo;
 
@@ -48,7 +49,7 @@ public interface Serializer<T> {
      * @param storage     Current storage to push and fetch values safely.
      * @param serializers Serializers instance that is serializing values.
      */
-    void serialize(T value, Key<T> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers);
+    void serialize(T value, Key<T> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) throws SerializationException;
 
     /**
      * Deserialize {@code key} to object of type {@link T}.
@@ -59,5 +60,5 @@ public interface Serializer<T> {
      * @param serializers Serializers instance that is de-serializing values.
      * @return De-serialized object of type {@link T}.
      */
-    T deserialize(Key<T> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers);
+    T deserialize(Key<T> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) throws SerializationException;
 }

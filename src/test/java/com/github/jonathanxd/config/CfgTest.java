@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.UnaryOperator;
 
 public class CfgTest {
@@ -101,8 +102,7 @@ public class CfgTest {
 
         List<Member> memberList2 = members.getValue();
 
-        System.out.println(memberList);
-        System.out.println(memberList2);
+        Assert.assertEquals(memberList, memberList2);
     }
 
     @Test
@@ -328,6 +328,20 @@ public class CfgTest {
 
         public int getAge() {
             return this.age;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.getName(), this.getAge());
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof Member))
+                return super.equals(obj);
+
+            return Objects.equals(((Member) obj).getName(), this.getName())
+                    && ((Member) obj).getAge() == this.getAge();
         }
 
         @Override
