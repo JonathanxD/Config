@@ -30,7 +30,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.github.JonathanxD:JwIUtils:4.9.38'
+    compile 'com.github.JonathanxD.JwIUtils:JwIUtils:4.14.0'
     testCompile 'org.yaml:snakeyaml:1.9'
     testCompile "junit:junit:4.12"
 }
