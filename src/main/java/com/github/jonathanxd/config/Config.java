@@ -48,12 +48,12 @@ public class Config extends Storage {
     /**
      * Root Map type.
      */
-    private static final TypeInfo<Map<String, Object>> TYPE = TypeInfo.builderOf(Map.class).of(String.class, Object.class).buildGeneric();
+    private static final TypeInfo<Map<Object, Object>> TYPE = TypeInfo.builderOf(Map.class).of(Object.class, Object.class).buildGeneric();
 
     /**
      * Root map
      */
-    private final Map<String, Object> map = new LinkedHashMap<>();
+    private final Map<Object, Object> map = new LinkedHashMap<>();
 
     /**
      * Serializers
@@ -63,7 +63,7 @@ public class Config extends Storage {
     /**
      * Root key.
      */
-    private final Key<Map<String, Object>> root = new RootKey(this);
+    private final Key<Map<Object, Object>> root = new RootKey(this);
 
     /**
      * Backend saver and loader.
@@ -105,7 +105,7 @@ public class Config extends Storage {
      *
      * @return Root key.
      */
-    public Key<Map<String, Object>> getRootKey() {
+    public Key<Map<Object, Object>> getRootKey() {
         return this.root;
     }
 
@@ -169,7 +169,7 @@ public class Config extends Storage {
      * enclosing config}, children uses the same {@link Storage storage} as this key, but sets the
      * entry of the map instead of the entire map.
      */
-    class RootKey extends Key<Map<String, Object>> {
+    class RootKey extends Key<Map<Object, Object>> {
 
         /**
          * Creates a root key.
@@ -186,14 +186,14 @@ public class Config extends Storage {
         }
 
         @Override
-        public Map<String, Object> getValue() {
+        public Map<Object, Object> getValue() {
             return Config.this.map;
         }
 
         @SuppressWarnings("unchecked")
         @Override
-        public void setValue(Map<String, Object> value) {
-            Map<String, Object> map = this.getValue();
+        public void setValue(Map<Object, Object> value) {
+            Map<Object, Object> map = this.getValue();
             map.clear();
             map.putAll(value);
         }

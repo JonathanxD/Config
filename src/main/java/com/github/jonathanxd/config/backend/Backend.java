@@ -38,8 +38,8 @@ import java.util.Map;
  * Configuration save and load backend.
  *
  * Backend should save and load configuration from an object or upstream, this should also specify
- * to frontend which value types it support or not. The backend should support all {@link
- * CommonTypes} (if upstream do not, backend should do the extra work).
+ * to frontend which value types it support or not. The backend should support all types specified
+ * by {@link CommonTypes} documentation (if upstream do not, backend should do the extra work).
  */
 public interface Backend {
 
@@ -51,7 +51,7 @@ public interface Backend {
      *
      * @param map Map to save (may be unmodifiable).
      */
-    void save(Map<String, Object> map);
+    void save(Map<Object, Object> map);
 
     /**
      * Loads configuration map (can be unmodifiable).
@@ -61,7 +61,7 @@ public interface Backend {
      *
      * @return Configuration map.
      */
-    Map<String, Object> load();
+    Map<Object, Object> load();
 
     /**
      * Returns true if this backed supports object of {@code type} without serialization.

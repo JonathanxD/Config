@@ -59,14 +59,14 @@ public class YamlBackend extends AbstractIOBackend {
     }
 
     @Override
-    public void save(Map<String, Object> map, Writer writer) {
+    public void save(Map<Object, Object> map, Writer writer) {
         this.yaml.dump(map, writer);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public Map<String, Object> load(Reader reader) {
-        return (Map<String, Object>) this.yaml.load(reader);
+    public Map<Object, Object> load(Reader reader) {
+        return (Map<Object, Object>) this.yaml.load(reader);
     }
 
     @Override

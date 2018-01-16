@@ -37,7 +37,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Common basic types
+ * Common basic types.
+ *
+ * All common types that should be supported by backend is:
+ *
+ * {@link String}, {@link Boolean}, {@link Byte}, {@link Short}, {@link Character}, {@link Integer},
+ * {@link Float}, {@link Long}, {@link Double}, {@link List} (of these types) and {@link Map} (of
+ * these types).
  */
 public class CommonTypes {
 

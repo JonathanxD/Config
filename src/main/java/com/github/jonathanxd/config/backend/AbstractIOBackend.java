@@ -43,7 +43,7 @@ public abstract class AbstractIOBackend implements Backend {
     }
 
     @Override
-    public final Map<String, Object> load() {
+    public final Map<Object, Object> load() {
         try (Reader r = this.getIo().openReader()) {
             return load(r);
         } catch (IOException e) {
@@ -52,7 +52,7 @@ public abstract class AbstractIOBackend implements Backend {
     }
 
     @Override
-    public final void save(Map<String, Object> map) {
+    public final void save(Map<Object, Object> map) {
         try (Writer w = this.getIo().openWriter()) {
             this.save(map, w);
         } catch (IOException e) {
@@ -66,7 +66,7 @@ public abstract class AbstractIOBackend implements Backend {
      * @param reader Reader of configuration.
      * @return Configuration map read from {@code reader}.
      */
-    public abstract Map<String, Object> load(Reader reader);
+    public abstract Map<Object, Object> load(Reader reader);
 
     /**
      * Saves configuration {@code map} to {@code writer}.
@@ -74,7 +74,7 @@ public abstract class AbstractIOBackend implements Backend {
      * @param map    Configuration map to writer.
      * @param writer Writer of configuration.
      */
-    public abstract void save(Map<String, Object> map, Writer writer);
+    public abstract void save(Map<Object, Object> map, Writer writer);
 
     private ConfigIO getIo() {
         return this.io;

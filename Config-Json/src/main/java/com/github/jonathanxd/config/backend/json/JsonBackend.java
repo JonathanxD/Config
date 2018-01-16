@@ -56,7 +56,7 @@ public class JsonBackend extends AbstractIOBackend {
 
     @SuppressWarnings("unchecked")
     @Override
-    public void save(Map<String, Object> map, Writer writer) {
+    public void save(Map<Object, Object> map, Writer writer) {
         try {
             JSONObject jsonObject = new JSONObject();
             jsonObject.putAll(map);
@@ -69,9 +69,9 @@ public class JsonBackend extends AbstractIOBackend {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Map<String, Object> load(Reader reader) {
+    public Map<Object, Object> load(Reader reader) {
         try {
-            return (Map<String, Object>) parser.parse(reader, new MapContainerFactory());
+            return (Map<Object, Object>) parser.parse(reader, new MapContainerFactory());
         } catch (IOException | ParseException e) {
             throw RethrowException.rethrow(e);
         }
