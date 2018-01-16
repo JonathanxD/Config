@@ -55,6 +55,7 @@ public abstract class AbstractIOBackend implements Backend {
     public final void save(Map<Object, Object> map) {
         try (Writer w = this.getIo().openWriter()) {
             this.save(map, w);
+            w.flush();
         } catch (IOException e) {
             throw RethrowException.rethrow(e);
         }
