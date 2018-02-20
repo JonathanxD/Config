@@ -3,7 +3,7 @@
  *
  *         The MIT License (MIT)
  *
- *      Copyright (c) 2017 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/) <jonathan.scripter@programmer.net>
+ *      Copyright (c) 2018 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/) <jonathan.scripter@programmer.net>
  *      Copyright (c) contributors
  *
  *
@@ -54,6 +54,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Serializer manager. We recommend to not call {@link Serializers} function directly from {@link
@@ -78,6 +79,7 @@ public final class Serializers {
         Serializers.GLOBAL.register(CommonTypes.TYPE_INFO, new TypeInfoSerializer());
         Serializers.GLOBAL.register(CommonTypes.CLASS, new ClassSerializer());
         Serializers.GLOBAL.registerEnumSerializer(TypeInfo.of(TextSerializer.ComponentType.class));
+        Serializers.GLOBAL.register(CommonTypes.UUID, new UuidSerializer());
         Serializers.GLOBAL.register(CommonTypes.TEXT_COMPONENT, new TextSerializer());
     }
 
@@ -423,8 +425,10 @@ public final class Serializers {
 
             Storage newStorage = Storage.createListStorage(key);
 
-            for (Object o : value) {
-                Key<?> newKey = key.getAs(elementType, newStorage);
+            for (int i = 0; i < value.size(); i++) {
+                Object o = value.get(i);
+
+                Key<?> newKey = key.getAs(key.getName() + ":" + i, elementType, newStorage);
 
                 serializers.serializeUncheckedAndGet(o, newKey);
             }
@@ -446,8 +450,10 @@ public final class Serializers {
 
                 Storage listStorage = Storage.createListStorage(key);
 
-                for (Object o : list) {
-                    Key<?> newKey = key.getAs(elementType, listStorage);
+                for (int i = 0; i < list.size(); i++) {
+                    Object o = list.get(i);
+
+                    Key<?> newKey = key.getAs(key.getName() + ":" + i, elementType, listStorage);
 
                     listStorage.pushValue(newKey, o);
 
@@ -520,6 +526,23 @@ public final class Serializers {
         public TextComponent deserialize(Key<TextComponent> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
             return TextUtil.parse(key.getAs(String.class).getValue());
         }
+    }
+
+    /**
+     * Serializers {@link UUID}.
+     */
+    public static class UuidSerializer implements Serializer<UUID> {
+
+        @Override
+        public void serialize(UUID value, Key<UUID> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            key.getAs(String.class).setValue(value.toString());
+        }
+
+        @Override
+        public UUID deserialize(Key<UUID> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            return UUID.fromString(key.getAs(String.class).getValue());
+        }
+
     }
 
     /**

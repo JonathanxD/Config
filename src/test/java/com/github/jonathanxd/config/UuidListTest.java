@@ -25,40 +25,35 @@
  *      OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *      THE SOFTWARE.
  */
-package com.github.jonathanxd.config.serialize;
+package com.github.jonathanxd.config;
 
-import com.github.jonathanxd.config.Key;
-import com.github.jonathanxd.config.SerializationException;
-import com.github.jonathanxd.config.Storage;
+import com.github.jonathanxd.config.backend.MapBackend;
+import com.github.jonathanxd.iutils.collection.Collections3;
 import com.github.jonathanxd.iutils.type.TypeInfo;
+import com.github.jonathanxd.iutils.type.TypeParameterProvider;
 
-/**
- * Serializer, transform objects into configuration values and configuration values into objects.
- *
- * @param <T> Object type.
- * @see Key
- */
-public interface Serializer<T> {
+import org.junit.Assert;
+import org.junit.Test;
 
-    /**
-     * Serialize object of type {@link T} to {@code key}.
-     *
-     * @param value       Object to serialize.
-     * @param key         Key to store serialized object.
-     * @param typeInfo    Type info provided to serializer.
-     * @param storage     Current storage to push and fetch values safely.
-     * @param serializers Serializers instance that is serializing values.
-     */
-    void serialize(T value, Key<T> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) throws SerializationException;
+import java.util.List;
+import java.util.UUID;
 
-    /**
-     * Deserialize {@code key} to object of type {@link T}.
-     *
-     * @param key         Key to deserialize.
-     * @param typeInfo    Type info provided to serializer.
-     * @param storage     Current storage to push and fetch values safely.
-     * @param serializers Serializers instance that is de-serializing values.
-     * @return De-serialized object of type {@link T}.
-     */
-    T deserialize(Key<T> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) throws SerializationException;
+public class UuidListTest {
+    private static final TypeInfo<List<UUID>> UUID_LIST_TYPE = new TypeParameterProvider<List<UUID>>() {}.createTypeInfo();
+
+    @Test
+    public void listTest() {
+        Config config = new Config(new MapBackend());
+
+        KeySpec<List<UUID>> uuids = KeySpec.create("uuids", UUID_LIST_TYPE);
+        List<UUID> uuidList = Collections3.listOf(UUID.randomUUID(), UUID.randomUUID());
+
+        config.getRootKey().get(uuids).setValue(uuidList);
+
+        List<UUID> value = config.getRootKey().get(uuids).getValue();
+
+        Assert.assertEquals(uuidList, value);
+    }
+
+
 }

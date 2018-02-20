@@ -3,7 +3,7 @@
  *
  *         The MIT License (MIT)
  *
- *      Copyright (c) 2017 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/) <jonathan.scripter@programmer.net>
+ *      Copyright (c) 2018 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/) <jonathan.scripter@programmer.net>
  *      Copyright (c) contributors
  *
  *
@@ -35,7 +35,7 @@ public class KeyNotFoundException extends RuntimeException {
     }
 
     public KeyNotFoundException(Key<?> key) {
-        super("Key '"+ Arrays.toString(KeyUtil.getPath(key))+"' cannot be found in current storage.");
+        super("Key '"+ Arrays.toString(KeyUtil.getPath(key))+"' cannot be found in current storage. Key obj: "+key);
     }
 
     public KeyNotFoundException(String message) {

@@ -3,7 +3,7 @@
  *
  *         The MIT License (MIT)
  *
- *      Copyright (c) 2017 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/) <jonathan.scripter@programmer.net>
+ *      Copyright (c) 2018 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/) <jonathan.scripter@programmer.net>
  *      Copyright (c) contributors
  *
  *
@@ -35,6 +35,7 @@ import com.github.jonathanxd.iutils.type.TypeParameterProvider;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Common basic types.
@@ -69,6 +70,7 @@ public class CommonTypes {
 
     public static final TypeInfo<Object> OBJECT = TypeInfo.of(Object.class);
     public static final TypeInfo<String> STRING = TypeInfo.of(String.class);
+    public static final TypeInfo<UUID> UUID = TypeInfo.of(UUID.class);
     public static final TypeInfo<TextComponent> TEXT_COMPONENT = TypeInfo.of(TextComponent.class);
 
     public static final TypeInfo<Map> MAP = TypeInfo.of(Map.class);

@@ -3,7 +3,7 @@
  *
  *         The MIT License (MIT)
  *
- *      Copyright (c) 2017 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/) <jonathan.scripter@programmer.net>
+ *      Copyright (c) 2018 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/) <jonathan.scripter@programmer.net>
  *      Copyright (c) contributors
  *
  *
@@ -47,7 +47,7 @@ import java.util.function.Supplier;
  * example, a key to an entry of an element of list, or a key to an entry of key or value of a
  * {@link Map map}. To determine whether a key is emulated or not, use {@link Key#isEmulated()}. And
  * to get which key was used to create emulated key, use {@link #getOriginalKey()}. Emulated keys
- * are unique and are not equal to any other key than itself.
+ * only equals to keys that have same {@link #getOriginalKey() original key}.
  *
  * {@link Key} fetches and pushes the value to the {@link Storage storage} and create child keys
  * linked to another {@link Storage storage} that fetches and pushes values to current {@link
@@ -56,8 +56,8 @@ import java.util.function.Supplier;
  * Keys carry your own {@link T type}, the type does not really reflect the type of stored values,
  * the type reflects expected value type. This carried {@link T type} is used to serialize and
  * deserialize value. The deserialization/serialization is called internally, during value fetching
- * and pushing. Query and set methods can throw exceptions if there is no serialize for key type and
- * the key type is not supported by {@link com.github.jonathanxd.config.backend.Backend}.
+ * and pushing. Query and set methods can throw exceptions if there is no serializer for key type
+ * and the key type is not supported by {@link com.github.jonathanxd.config.backend.Backend}.
  *
  * Keys are identified by {@link #getConfig() config}, {@link #getParent() parent key} and {@link
  * #getName() key name}.
@@ -130,6 +130,28 @@ public class Key<T> {
     }
 
     /**
+     * Creates a new emulated key based on {@code base}.
+     *
+     * This key stores/fetches values from {@code storage}.
+     *
+     * This is commonly used to call serializers with new key without affecting current storage,
+     * allowing key-value pair to be stored in alternative {@code storage} before it is added into
+     * {@link Key#getConfig() base key config} storage.
+     *
+     * This variant is used for keys that a special name is required, such as Lists.
+     *
+     * @param base    Base key.
+     * @param name    New name.
+     * @param type    Type of the new key.
+     * @param storage Storage where key and key value resides.
+     * @param <T>     Type of the new key.
+     * @return Emulated key based on {@code base}.
+     */
+    private static <T> Key<T> createKey(Key<?> base, String name, TypeInfo<T> type, Storage storage) {
+        return Key.createKey(base.getConfig(), base.getParent(), name, type, storage, base);
+    }
+
+    /**
      * Gets the original key.
      *
      * @param key Key to find original key.
@@ -167,6 +189,56 @@ public class Key<T> {
         sb.append(aClass.getSimpleName());
 
         return sb.toString();
+    }
+
+    /**
+     * Gets this key as a get of another type.
+     *
+     * @param name New Name.
+     * @param type New type.
+     * @param <V>  New type.
+     * @return A new emulated key that emulates this key with different type and name.
+     */
+    public <V> Key<V> getAs(String name, TypeInfo<V> type) {
+        return Key.createKey(this, name, type, this.getStorage());
+    }
+
+    /**
+     * Gets this key as a get of another type that stores values in alternative {@code storage}.
+     *
+     * @param type    New type.
+     * @param storage New storage.
+     * @param <V>     New type.
+     * @return A new emulated key that emulates this key with different type and name, and that
+     * stores values in alternative {@code storage}.
+     */
+    public <V> Key<V> getAs(String name, TypeInfo<V> type, Storage storage) {
+        return Key.createKey(this, name, type, storage);
+    }
+
+    /**
+     * Gets this key as a get of another type.
+     *
+     * @param name New Name.
+     * @param type New type.
+     * @param <V>  New type.
+     * @return A new emulated key that emulates this key with different type and name.
+     */
+    public <V> Key<V> getAs(String name, Class<V> type) {
+        return this.getAs(name, TypeInfo.of(type));
+    }
+
+    /**
+     * Gets this key as a get of another type that stores values in alternative {@code storage}.
+     *
+     * @param type    New type.
+     * @param storage New storage.
+     * @param <V>     New type.
+     * @return A new emulated key that emulates this key with different type and name, and that
+     * stores values in alternative {@code storage}.
+     */
+    public <V> Key<V> getAs(String name, Class<V> type, Storage storage) {
+        return this.getAs(name, TypeInfo.of(type), storage);
     }
 
     /**
@@ -439,20 +511,18 @@ public class Key<T> {
 
     @Override
     public int hashCode() {
-        if (this.isEmulated())
-            return super.hashCode();
-
-        return Objects.hash(this.getConfig(), this.getParent(), this.getName());
+        return Objects.hash(this.getConfig(), this.getOriginalKey(), this.getParent(), this.getName());
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this.isEmulated() || !(obj instanceof Key<?>))
+        if (!(obj instanceof Key<?>))
             return super.equals(obj);
 
         Key<?> other = (Key<?>) obj;
 
         return Objects.equals(this.getConfig(), other.getConfig())
+                && Objects.equals(this.getOriginalKey(), other.getOriginalKey())
                 && Objects.equals(this.getParent(), other.getParent())
                 && Objects.equals(this.getName(), other.getName());
     }

@@ -3,7 +3,7 @@
  *
  *         The MIT License (MIT)
  *
- *      Copyright (c) 2017 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/) <jonathan.scripter@programmer.net>
+ *      Copyright (c) 2018 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/) <jonathan.scripter@programmer.net>
  *      Copyright (c) contributors
  *
  *
@@ -342,6 +342,7 @@ public abstract class Storage {
         public Object fetchValue(Key<?> key) {
             if (!this.exists(key))
                 throw new KeyNotFoundException(key);
+
             return this.map.get(key.getName());
         }
 
@@ -531,7 +532,7 @@ public abstract class Storage {
         /**
          * Key-value pair.
          */
-        private final Map<Key<?>, Object> map = new LinkedHashMap<>();
+        private final Map<String, Object> map = new LinkedHashMap<>();
         private final Supplier<List<Object>> valuesListSupplier =
                 () -> BiStreams.mapStream(this.map).collectValue(Collectors.toList());
 
@@ -560,7 +561,7 @@ public abstract class Storage {
 
         @Override
         public void pushValue(Key<?> key, Object value) {
-            this.map.put(key, value);
+            this.map.put(key.getName(), value);
 
             this.store();
         }
@@ -570,12 +571,12 @@ public abstract class Storage {
             if (!this.exists(key))
                 throw new KeyNotFoundException(key);
 
-            return this.map.get(key);
+            return this.map.get(key.getName());
         }
 
         @Override
         public boolean exists(Key<?> key) {
-            return this.map.containsKey(key);
+            return this.map.containsKey(key.getName());
         }
 
         private Key<?> getKey() {
