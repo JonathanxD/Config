@@ -3,7 +3,7 @@
  *
  *         The MIT License (MIT)
  *
- *      Copyright (c) 2018 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/) <jonathan.scripter@programmer.net>
+ *      Copyright (c) 2021 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/) <jonathan.scripter@programmer.net>
  *      Copyright (c) contributors
  *
  *
@@ -29,11 +29,10 @@ package com.github.jonathanxd.config.backend.json;
 
 import com.github.jonathanxd.config.backend.AbstractIOBackend;
 import com.github.jonathanxd.config.backend.ConfigIO;
-import com.github.jonathanxd.iutils.exception.RethrowException;
 
+import com.github.jonathanxd.iutils.exception.RethrowException;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ContainerFactory;
-import org.json.simple.parser.ContentHandler;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
