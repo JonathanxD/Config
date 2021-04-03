@@ -3,7 +3,7 @@
  *
  *         The MIT License (MIT)
  *
- *      Copyright (c) 2016 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
+ *      Copyright (c) 2021 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
  *      Copyright (c) contributors
  *
  *
@@ -28,7 +28,7 @@
 package com.github.jonathanxd.config.backend;
 
 
-import com.github.jonathanxd.iutils.object.GenericRepresentation;
+import com.github.jonathanxd.iutils.type.TypeInfo;
 
 import java.util.Map;
 
@@ -52,7 +52,7 @@ public interface ConfigBackend {
      * @param expectedType Expected Type
      * @param <T>          Type
      */
-    <T> void setValueToPath(Object[] path, T value, GenericRepresentation<T> expectedType);
+    <T> void setValueToPath(Object[] path, T value, TypeInfo<T> expectedType);
 
     /**
      * Check if a path exists
@@ -78,7 +78,7 @@ public interface ConfigBackend {
      * @param <T>          Type
      * @return Converted Value
      */
-    <T> T getValueFromPath(Object[] path, GenericRepresentation<T> expectedType);
+    <T> T getValueFromPath(Object[] path, TypeInfo<T> expectedType);
 
     /**
      * Get value IN Path as {@link String}
@@ -128,5 +128,5 @@ public interface ConfigBackend {
      *
      * @return True if type is supported
      */
-    boolean isSupported(GenericRepresentation<?> value);
+    boolean isSupported(TypeInfo<?> value);
 }

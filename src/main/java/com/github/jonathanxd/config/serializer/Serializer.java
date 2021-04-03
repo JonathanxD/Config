@@ -3,7 +3,7 @@
  *
  *         The MIT License (MIT)
  *
- *      Copyright (c) 2016 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
+ *      Copyright (c) 2021 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
  *      Copyright (c) contributors
  *
  *
@@ -28,14 +28,14 @@
 package com.github.jonathanxd.config.serializer;
 
 import com.github.jonathanxd.config.key.Node;
-import com.github.jonathanxd.iutils.object.GenericRepresentation;
-import com.github.jonathanxd.iutils.object.TypeProvider;
+import com.github.jonathanxd.iutils.type.TypeInfo;
+import com.github.jonathanxd.iutils.type.TypeProvider;
 
 /**
  * Created by jonathan on 24/06/16.
  */
 public interface Serializer<T> extends TypeProvider {
-    void serialize(T value, Node node, GenericRepresentation<?> representation);
+    void serialize(T value, Node node, TypeInfo<?> representation);
 
-    T deserialize(Node node, GenericRepresentation<?> representation);
+    T deserialize(Node node, TypeInfo<?> representation);
 }

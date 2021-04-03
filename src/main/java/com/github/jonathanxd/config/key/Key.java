@@ -3,7 +3,7 @@
  *
  *         The MIT License (MIT)
  *
- *      Copyright (c) 2016 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
+ *      Copyright (c) 2021 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
  *      Copyright (c) contributors
  *
  *
@@ -35,7 +35,7 @@ import com.github.jonathanxd.config.Config;
 import com.github.jonathanxd.config.Path;
 import com.github.jonathanxd.config.converter.Converter;
 import com.github.jonathanxd.config.transformer.Transformer;
-import com.github.jonathanxd.iutils.object.GenericRepresentation;
+import com.github.jonathanxd.iutils.type.TypeInfo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,18 +45,18 @@ import java.util.List;
  */
 public class Key<T> implements BaseValuable {
 
-    private final GenericRepresentation<T> typeRepresentation;
+    private final TypeInfo<T> typeRepresentation;
     private final List<Transformer<T>> transformers = new ArrayList<>();
     private final Path<?> path;
     private final Config<?> config;
 
-    public Key(GenericRepresentation<T> typeRepresentation, Path<?> path, Config<?> config) {
+    public Key(TypeInfo<T> typeRepresentation, Path<?> path, Config<?> config) {
         this.typeRepresentation = typeRepresentation;
         this.path = path;
         this.config = config;
     }
 
-    public Key(GenericRepresentation<T> typeRepresentation, Path<?> path, Config<?> config, List<Transformer<T>> transformers) {
+    public Key(TypeInfo<T> typeRepresentation, Path<?> path, Config<?> config, List<Transformer<T>> transformers) {
         this(typeRepresentation, path, config);
 
         this.transformers.addAll(transformers);
@@ -97,7 +97,7 @@ public class Key<T> implements BaseValuable {
         return config;
     }
 
-    public GenericRepresentation<T> getTypeRepresentation() {
+    public TypeInfo<T> getTypeRepresentation() {
         return typeRepresentation;
     }
 

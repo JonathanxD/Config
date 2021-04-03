@@ -3,7 +3,7 @@
  *
  *         The MIT License (MIT)
  *
- *      Copyright (c) 2016 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
+ *      Copyright (c) 2021 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
  *      Copyright (c) contributors
  *
  *
@@ -37,7 +37,7 @@ import com.github.jonathanxd.config.backend.ConfigBackend;
 import com.github.jonathanxd.config.key.Key;
 import com.github.jonathanxd.config.key.Node;
 import com.github.jonathanxd.config.transformer.Transformer;
-import com.github.jonathanxd.iutils.object.GenericRepresentation;
+import com.github.jonathanxd.iutils.type.TypeInfo;
 
 import java.util.Collections;
 import java.util.List;
@@ -59,15 +59,15 @@ public class ValueGetter {
         return backend.getValueFromPath(path.getPath());
     }
 
-    public <T> T getValue(Node node, GenericRepresentation<T> representation) {
+    public <T> T getValue(Node node, TypeInfo<T> representation) {
         return deserialize(node, representation, null);
     }
 
-    public <T> T getValue(Node node, GenericRepresentation<T> representation, List<Transformer<T>> transformers) {
+    public <T> T getValue(Node node, TypeInfo<T> representation, List<Transformer<T>> transformers) {
         return deserialize(node, representation, transformers);
     }
 
-    public <T> T getValue(Node node, GenericRepresentation<T> representation, Transformer<T> transformer) {
+    public <T> T getValue(Node node, TypeInfo<T> representation, Transformer<T> transformer) {
         return deserialize(node, representation, Collections.singletonList(transformer));
     }
 
@@ -76,7 +76,7 @@ public class ValueGetter {
     }
 
     @SuppressWarnings("unchecked")
-    private <T> T deserialize(Node node, GenericRepresentation<T> representation, List<Transformer<T>> transformerList) {
+    private <T> T deserialize(Node node, TypeInfo<T> representation, List<Transformer<T>> transformerList) {
         if (backend.isSupported(representation)) {
             return tranform(backend.getValueFromPath(node.getPath().getPath(), representation), transformerList);
         } else {

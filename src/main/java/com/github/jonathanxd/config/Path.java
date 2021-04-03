@@ -3,7 +3,7 @@
  *
  *         The MIT License (MIT)
  *
- *      Copyright (c) 2016 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
+ *      Copyright (c) 2021 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
  *      Copyright (c) contributors
  *
  *
@@ -27,11 +27,13 @@
  */
 package com.github.jonathanxd.config;
 
-import com.github.jonathanxd.iutils.annotations.NotNull;
-import com.github.jonathanxd.iutils.arrays.ArrayUtils;
-import com.github.jonathanxd.iutils.arrays.JwArray;
-import com.github.jonathanxd.iutils.conditions.Conditions;
 
+import com.github.jonathanxd.iutils.array.ArrayUtils;
+import com.github.jonathanxd.iutils.condition.Conditions;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.StringJoiner;
 
@@ -67,7 +69,7 @@ public class Path<T> {
     }
 
     public Path<T> path(T... ids) {
-        JwArray<Object> array = new JwArray<>();
+        List<Object> array = new ArrayList<>();
         //StringJoiner paths = new StringJoiner(".");
 
         for (T id : ids) {
@@ -76,7 +78,7 @@ public class Path<T> {
             array.add(path);
         }
 
-        return new Path<>(config, array.toGenericArray());
+        return new Path<>(config, array.toArray(new Object[0]));
     }
 
     /*public String getStringPath() {
@@ -108,7 +110,7 @@ public class Path<T> {
             return new String[0];
 
         StringBuilder currentStr = new StringBuilder();
-        JwArray<String> array = new JwArray<>();
+        List<String> array = new ArrayList<>();
 
         char[] toCharArray = path.toCharArray();
 
@@ -134,7 +136,7 @@ public class Path<T> {
             }
         }
 
-        return array.toGenericArray(String[].class);
+        return array.toArray(new String[0]);
     }
 
     public boolean isMain() {

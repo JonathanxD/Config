@@ -3,7 +3,7 @@
  *
  *         The MIT License (MIT)
  *
- *      Copyright (c) 2016 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
+ *      Copyright (c) 2021 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
  *      Copyright (c) contributors
  *
  *
@@ -29,8 +29,8 @@ package com.github.jonathanxd.config.key;
 
 import com.github.jonathanxd.config.Config;
 import com.github.jonathanxd.config.Path;
-import com.github.jonathanxd.iutils.function.stream.MapStream;
-import com.github.jonathanxd.iutils.object.GenericRepresentation;
+import com.github.jonathanxd.iutils.function.stream.BiStreams;
+import com.github.jonathanxd.iutils.type.TypeInfo;
 
 import java.util.Map;
 
@@ -46,17 +46,17 @@ public interface Node extends BaseValuable {
     }
 
     default <T> void setValue(T value, Class<T> representation) {
-        setValue(value, GenericRepresentation.aEnd(representation));
+        setValue(value, TypeInfo.of(representation));
     }
 
-    <T> void setValue(T value, GenericRepresentation<T> representation);
+    <T> void setValue(T value, TypeInfo<T> representation);
 
     Object getValue();
 
     void setValue(Object value);
 
     default <T> T getValue(Class<T> tClass) {
-        return getValue(GenericRepresentation.aEnd(tClass));
+        return getValue(TypeInfo.of(tClass));
     }
 
     default boolean exists() {
@@ -73,12 +73,12 @@ public interface Node extends BaseValuable {
         this.setValue(o);
     }
 
-    <T> T getValue(GenericRepresentation<T> representation);
+    <T> T getValue(TypeInfo<T> representation);
 
     default Node[] getChildrenNodes() {
         Map<Object, Object> sectionsOnPath = getConfig().getBackend().getSectionsOnPath(getPath().getPath());
 
-        return MapStream.of(sectionsOnPath)
+        return BiStreams.mapStream(sectionsOnPath)
                 .streamMap((sec, obj) -> sec)
                 .map(path -> createNewNode(getConfig(), this.getPath().withGeneric(getConfig().getPath(path))))
                 .toArray(Node[]::new);

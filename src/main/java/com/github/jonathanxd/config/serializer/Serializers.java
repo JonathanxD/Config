@@ -3,7 +3,7 @@
  *
  *         The MIT License (MIT)
  *
- *      Copyright (c) 2016 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
+ *      Copyright (c) 2021 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
  *      Copyright (c) contributors
  *
  *
@@ -28,22 +28,17 @@
 package com.github.jonathanxd.config.serializer;
 
 import com.github.jonathanxd.config.key.Node;
-import com.github.jonathanxd.iutils.conditions.Conditions;
-import com.github.jonathanxd.iutils.containers.primitivecontainers.IntContainer;
-import com.github.jonathanxd.iutils.exceptions.RethrowException;
+import com.github.jonathanxd.iutils.condition.Conditions;
+import com.github.jonathanxd.iutils.container.primitivecontainers.IntContainer;
+import com.github.jonathanxd.iutils.exception.RethrowException;
 import com.github.jonathanxd.iutils.function.collector.BiCollectors;
-import com.github.jonathanxd.iutils.function.stream.MapStream;
+import com.github.jonathanxd.iutils.function.stream.BiStreams;
 import com.github.jonathanxd.iutils.map.MapUtils;
-import com.github.jonathanxd.iutils.object.GenericRepresentation;
+import com.github.jonathanxd.iutils.type.TypeInfo;
+import com.github.jonathanxd.iutils.type.TypeInfoUtil;
 
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by jonathan on 25/06/16.
@@ -51,16 +46,16 @@ import java.util.Map;
 public class Serializers {
 
     private static final Serializers DEFAULT = new Serializers(
-            MapUtils.mapOf(GenericRepresentation.aEnd(Collection.class), new CollectionSerializer(),
-                    GenericRepresentation.aEnd(Map.class), new MapSerializer(),
-                    GenericRepresentation.aEnd(Class.class), new ClassSerializer(),
-                    GenericRepresentation.aEnd(Enum.class), new EnumSerializer(),
-                    GenericRepresentation.aEnd(GenericRepresentation.class), new GenericRepresentationSerializer())
+            MapUtils.mapOf(TypeInfo.of(Collection.class), new CollectionSerializer(),
+                    TypeInfo.of(Map.class), new MapSerializer(),
+                    TypeInfo.of(Class.class), new ClassSerializer(),
+                    TypeInfo.of(Enum.class), new EnumSerializer(),
+                    TypeInfo.of(TypeInfo.class), new GenericRepresentationSerializer())
     );
 
-    private final Map<GenericRepresentation<?>, Serializer<?>> serializerMap = new HashMap<>();
+    private final Map<TypeInfo<?>, Serializer<?>> serializerMap = new HashMap<>();
 
-    Serializers(Map<GenericRepresentation<?>, Serializer<?>> serializers) {
+    Serializers(Map<TypeInfo<?>, Serializer<?>> serializers) {
         this.serializerMap.putAll(serializers);
     }
 
@@ -85,7 +80,7 @@ public class Serializers {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> Serializer<T> getSerializer(GenericRepresentation<T> representation) {
+    public <T> Serializer<T> getSerializer(TypeInfo<T> representation) {
 
         if (this != DEFAULT) {
             Serializer<?> defaultSerializer = DEFAULT.getSerializer(representation);
@@ -94,11 +89,11 @@ public class Serializers {
                 return (Serializer<T>) defaultSerializer;
         }
 
-        Class<? extends T> firstType = representation.getAClass();
+        Class<? extends T> firstType = representation.getTypeClass();
 
         if (firstType.getTypeParameters().length != 0) {
             // Is Generic
-            GenericRepresentation<? extends T> plain = GenericRepresentation.aEnd(firstType);
+            TypeInfo<? extends T> plain = TypeInfo.of(firstType);
 
             Serializer<?> assignable = findAssignable(plain);
 
@@ -115,26 +110,26 @@ public class Serializers {
         return (Serializer<T>) findAssignable(representation);
     }
 
-    public <T> Serializer<T> getRequiredSerializer(GenericRepresentation<T> representation) {
+    public <T> Serializer<T> getRequiredSerializer(TypeInfo<T> representation) {
         return Conditions.checkNotNull(getSerializer(representation), "Cannot get Serializer for type: '" + representation + "'!");
     }
 
-    private Serializer<?> findAssignable(GenericRepresentation<?> genericRepresentation) {
+    private Serializer<?> findAssignable(TypeInfo<?> genericRepresentation) {
 
         if (this.serializerMap.containsKey(genericRepresentation))
             return this.serializerMap.get(genericRepresentation);
 
-        Map<GenericRepresentation<?>, Serializer<?>> collected = MapStream.of(this.serializerMap)
-                .filter((genericRepresentation1, serializer) -> genericRepresentation1.compareToAssignable(genericRepresentation) == 0)
+        Map<TypeInfo<?>, Serializer<?>> collected = BiStreams.mapStream(this.serializerMap)
+                .filter((genericRepresentation1, serializer) -> genericRepresentation1.compareTypeAndRelatedTo(genericRepresentation) == 0)
                 .collect(BiCollectors.toMap());
 
-        Iterator<Map.Entry<GenericRepresentation<?>, Serializer<?>>> iterator = collected.entrySet().iterator();
+        Iterator<Map.Entry<TypeInfo<?>, Serializer<?>>> iterator = collected.entrySet().iterator();
 
         Serializer<?> last = null;
 
         while (iterator.hasNext()) {
 
-            Map.Entry<GenericRepresentation<?>, Serializer<?>> current = iterator.next();
+            Map.Entry<TypeInfo<?>, Serializer<?>> current = iterator.next();
 
             if (!iterator.hasNext())
                 last = current.getValue();
@@ -145,11 +140,11 @@ public class Serializers {
 
     private void validade(Serializer<?> serializer) {
         try {
-            GenericRepresentation[] references = serializer.getReferences();
+            TypeInfo[] references = serializer.getReferences();
 
             if (references.length == 0) {
                 throw new IllegalArgumentException("Empty representation!");
-            } else if (references[0].getAClass().equals(Object.class)) {
+            } else if (references[0].getTypeClass().equals(Object.class)) {
                 throw new IllegalArgumentException("Cannot create Serializer for Object class!");
             }
         } catch (Throwable t) {
@@ -157,7 +152,7 @@ public class Serializers {
         }
     }
 
-    private GenericRepresentation<?> getType(Serializer<?> serializer) {
+    private TypeInfo<?> getType(Serializer<?> serializer) {
         return serializer.getReferences()[0];
     }
 
@@ -165,12 +160,12 @@ public class Serializers {
     private static final class CollectionSerializer implements Serializer<Collection> {
 
         @Override
-        public void serialize(Collection value, com.github.jonathanxd.config.key.Node node, GenericRepresentation<?> representation) {
+        public void serialize(Collection value, com.github.jonathanxd.config.key.Node node, TypeInfo<?> representation) {
 
-            if (representation.getRelated().length == 0)
+            if (representation.getTypeParameters().size() == 0)
                 throw new IllegalArgumentException("Missing element type of collection. Representation: '" + representation + "'!");
 
-            GenericRepresentation at0 = representation.getRelated()[0];// Element
+            TypeInfo at0 = representation.getTypeParameters().get(0);// Element
 
             int x = 0;
 
@@ -182,14 +177,14 @@ public class Serializers {
         }
 
         @Override
-        public Collection deserialize(com.github.jonathanxd.config.key.Node node, GenericRepresentation<?> representation) {
+        public Collection deserialize(com.github.jonathanxd.config.key.Node node, TypeInfo<?> representation) {
 
-            if (representation.getRelated().length == 0)
+            if (representation.getTypeParameters().size() == 0)
                 throw new IllegalArgumentException("Missing element type of collection. Representation: '" + representation + "'!");
 
             Collection collection = new ArrayList();
 
-            GenericRepresentation at0 = representation.getRelated()[0];// Element
+            TypeInfo at0 = representation.getTypeParameters().get(0);// Element
 
             for (com.github.jonathanxd.config.key.Node node1 : node.getChildrenNodes()) {
                 collection.add(node1.getValue(at0));
@@ -203,17 +198,17 @@ public class Serializers {
     private static final class MapSerializer implements Serializer<Map> {
 
         @Override
-        public void serialize(Map value, com.github.jonathanxd.config.key.Node node, GenericRepresentation<?> representation) {
+        public void serialize(Map value, com.github.jonathanxd.config.key.Node node, TypeInfo<?> representation) {
 
-            if (representation.getRelated().length < 2)
+            if (representation.getTypeParameters().size() < 2)
                 throw new IllegalArgumentException("Missing Key and/or Value type of Map. Representation: '" + representation + "'!");
 
-            GenericRepresentation keyType = representation.getRelated()[0];// Element
-            GenericRepresentation valueType = representation.getRelated()[1];// Element
+            TypeInfo keyType = representation.getTypeParameter(0);// Element
+            TypeInfo valueType = representation.getTypeParameter(1);// Element
 
-            boolean defaultConstructor = hasDefaultPublicConstructor(keyType.getAClass());
+            boolean defaultConstructor = hasDefaultPublicConstructor(keyType.getTypeClass());
 
-            if (keyType.getAClass().equals(String.class)) {
+            if (keyType.getTypeClass().equals(String.class)) {
                 value.forEach((key, v) -> {
                     node.getNode(key.toString()).setValue(v, valueType);
                 });
@@ -237,21 +232,21 @@ public class Serializers {
         }
 
         @Override
-        public Map deserialize(com.github.jonathanxd.config.key.Node node, GenericRepresentation<?> representation) {
+        public Map deserialize(com.github.jonathanxd.config.key.Node node, TypeInfo<?> representation) {
 
-            if (representation.getRelated().length < 2)
+            if (representation.getTypeParameters().size() < 2)
                 throw new IllegalArgumentException("Missing Key and/or Value type of Map. Representation: '" + representation + "'!");
 
-            GenericRepresentation keyType = representation.getRelated()[0];// Element
-            GenericRepresentation valueType = representation.getRelated()[1];// Element
+            TypeInfo keyType = representation.getTypeParameter(0);// Element
+            TypeInfo valueType = representation.getTypeParameter(1);// Element
 
-            boolean defaultConstructor = hasDefaultPublicConstructor(keyType.getAClass());
+            boolean defaultConstructor = hasDefaultPublicConstructor(keyType.getTypeClass());
 
             Map map = new HashMap();
 
             Node[] childrenNodes = node.getChildrenNodes();
 
-            if (keyType.getAClass().equals(String.class)) {
+            if (keyType.getTypeClass().equals(String.class)) {
                 for (Node childrenNode : childrenNodes) {
                     String name = (String) childrenNode.getPath().getPathName();
                     Object value = childrenNode.getValue(valueType);
@@ -281,12 +276,12 @@ public class Serializers {
     public static class ClassSerializer implements Serializer<Class> {
 
         @Override
-        public void serialize(Class value, Node node, GenericRepresentation<?> representation) {
+        public void serialize(Class value, Node node, TypeInfo<?> representation) {
             node.setValue(value.getName());
         }
 
         @Override
-        public Class deserialize(Node node, GenericRepresentation<?> representation) {
+        public Class deserialize(Node node, TypeInfo<?> representation) {
             try {
                 return Class.forName(String.valueOf(node.getValue()));
             } catch (ClassNotFoundException e) {
@@ -298,13 +293,13 @@ public class Serializers {
     public static class EnumSerializer implements Serializer<Enum> {
 
         @Override
-        public void serialize(Enum value, Node node, GenericRepresentation<?> representation) {
+        public void serialize(Enum value, Node node, TypeInfo<?> representation) {
             node.getNode("type").setValue(value.getDeclaringClass(), Class.class);
             node.getNode("name").setValue(value.name());
         }
 
         @Override
-        public Enum deserialize(Node node, GenericRepresentation<?> representation) {
+        public Enum deserialize(Node node, TypeInfo<?> representation) {
             Class type = node.getNode("type").getValue(Class.class);
             String name = node.getNode("name").getValueAsString();
 
@@ -312,18 +307,18 @@ public class Serializers {
         }
     }
 
-    public static class GenericRepresentationSerializer implements Serializer<GenericRepresentation> {
+    public static class GenericRepresentationSerializer implements Serializer<TypeInfo> {
 
         @Override
-        public void serialize(GenericRepresentation value, Node node, GenericRepresentation<?> representation) {
+        public void serialize(TypeInfo value, Node node, TypeInfo<?> representation) {
             node.setValue(value.toFullString());
         }
 
         @Override
-        public GenericRepresentation deserialize(Node node, GenericRepresentation<?> representation) {
+        public TypeInfo deserialize(Node node, TypeInfo<?> representation) {
             try {
-                return GenericRepresentation.fromFullString(node.getValueAsString()).get(0);
-            } catch (ClassNotFoundException e) {
+                return TypeInfoUtil.fromFullString(node.getValueAsString()).get(0);
+            } catch (Throwable e) {
                 throw new RethrowException(e, e.getCause());
             }
         }

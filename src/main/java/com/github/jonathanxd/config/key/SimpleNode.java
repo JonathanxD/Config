@@ -3,7 +3,7 @@
  *
  *         The MIT License (MIT)
  *
- *      Copyright (c) 2016 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
+ *      Copyright (c) 2021 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
  *      Copyright (c) contributors
  *
  *
@@ -29,7 +29,7 @@ package com.github.jonathanxd.config.key;
 
 import com.github.jonathanxd.config.Config;
 import com.github.jonathanxd.config.Path;
-import com.github.jonathanxd.iutils.object.GenericRepresentation;
+import com.github.jonathanxd.iutils.type.TypeInfo;
 
 /**
  * Created by jonathan on 25/06/16.
@@ -54,7 +54,7 @@ public class SimpleNode implements Node {
     }
 
     @Override
-    public <T> void setValue(T value, GenericRepresentation<T> representation) {
+    public <T> void setValue(T value, TypeInfo<T> representation) {
         config.getValueSetter().setValue(this, value, representation);
     }
 
@@ -69,7 +69,7 @@ public class SimpleNode implements Node {
     }
 
     @Override
-    public <T> T getValue(GenericRepresentation<T> representation) {
+    public <T> T getValue(TypeInfo<T> representation) {
         return config.getValueGetter().getValue(this, representation);
     }
 

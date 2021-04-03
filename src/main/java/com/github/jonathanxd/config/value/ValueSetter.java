@@ -3,7 +3,7 @@
  *
  *         The MIT License (MIT)
  *
- *      Copyright (c) 2016 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
+ *      Copyright (c) 2021 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
  *      Copyright (c) contributors
  *
  *
@@ -33,7 +33,7 @@ import com.github.jonathanxd.config.backend.ConfigBackend;
 import com.github.jonathanxd.config.key.Key;
 import com.github.jonathanxd.config.key.Node;
 import com.github.jonathanxd.config.transformer.Transformer;
-import com.github.jonathanxd.iutils.object.GenericRepresentation;
+import com.github.jonathanxd.iutils.type.TypeInfo;
 
 import java.util.Collections;
 import java.util.List;
@@ -56,7 +56,7 @@ public class ValueSetter {
     }
 
     public void setObjectValue(Path<?> path, Object value) {
-        if (!backend.isSupported(GenericRepresentation.aEnd(value.getClass()))) {
+        if (!backend.isSupported(TypeInfo.of(value.getClass()))) {
             throw new IllegalArgumentException("Object '" + value + "' not supported!");
         }
 
@@ -67,20 +67,20 @@ public class ValueSetter {
         setValue(key.createNode(), value, key.getTypeRepresentation(), key.getTransformers());
     }
 
-    public <T> void setValue(Node node, T value, GenericRepresentation<T> representation) {
+    public <T> void setValue(Node node, T value, TypeInfo<T> representation) {
         serialize(node, value, representation, null);
     }
 
-    public <T> void setValue(Node node, T value, GenericRepresentation<T> representation, List<Transformer<T>> transformers) {
+    public <T> void setValue(Node node, T value, TypeInfo<T> representation, List<Transformer<T>> transformers) {
         serialize(node, value, representation, transformers);
     }
 
-    public <T> void setValue(Node node, T value, GenericRepresentation<T> representation, Transformer<T> transformers) {
+    public <T> void setValue(Node node, T value, TypeInfo<T> representation, Transformer<T> transformers) {
         serialize(node, value, representation, Collections.singletonList(transformers));
     }
 
     @SuppressWarnings("unchecked")
-    private <T> void serialize(Node node, T value, GenericRepresentation<T> representation, List<Transformer<T>> transformerList) {
+    private <T> void serialize(Node node, T value, TypeInfo<T> representation, List<Transformer<T>> transformerList) {
 
         value = transform(value, transformerList);
 

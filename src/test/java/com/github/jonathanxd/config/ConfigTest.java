@@ -3,7 +3,7 @@
  *
  *         The MIT License (MIT)
  *
- *      Copyright (c) 2016 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
+ *      Copyright (c) 2021 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
  *      Copyright (c) contributors
  *
  *
@@ -35,12 +35,11 @@ import com.github.jonathanxd.config.key.Node;
 import com.github.jonathanxd.config.serializer.Serializer;
 import com.github.jonathanxd.config.transformer.Transformer;
 import com.github.jonathanxd.config.yaml.YamlBackend;
-import com.github.jonathanxd.iutils.exceptions.RethrowException;
+import com.github.jonathanxd.iutils.exception.RethrowException;
 import com.github.jonathanxd.iutils.map.MapUtils;
-import com.github.jonathanxd.iutils.object.AbstractGenericRepresentation;
-import com.github.jonathanxd.iutils.object.GenericRepresentation;
 import com.github.jonathanxd.iutils.string.JString;
-
+import com.github.jonathanxd.iutils.type.TypeInfo;
+import com.github.jonathanxd.iutils.type.TypeParameterProvider;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -88,8 +87,8 @@ public class ConfigTest {
         assertEquals("TimeSet[H=5, M=6, S=1]", myKey.getValue().toString());
 
 
-        Key<List<TimeSet>> timeSetList = config.createKey(new AbstractGenericRepresentation<List<TimeSet>>() {
-        }, config.getPath("TODOS_TEMPOS"))
+        Key<List<TimeSet>> timeSetList = config.createKey(new TypeParameterProvider<List<TimeSet>>() {
+        }.createTypeInfo(), config.getPath("TODOS_TEMPOS"))
                 .setDefaultValue(Arrays.asList(new TimeSet(1, 5, 9), new TimeSet(7, 6, 5)));
 
         assertEquals("[TimeSet[H=1, M=5, S=9], TimeSet[H=7, M=6, S=5]]", timeSetList.getValue().toString());
@@ -97,8 +96,8 @@ public class ConfigTest {
         Map<String, TimeSet> myMap = MapUtils.mapOf("Inicio", new TimeSet(1, 50, 0),
                 "Fim", new TimeSet(10, 40, 0));
 
-        Key<Map<String, TimeSet>> tempos = config.createKey(new AbstractGenericRepresentation<Map<String, TimeSet>>() {
-        }, config.getPath("TMP_I"))
+        Key<Map<String, TimeSet>> tempos = config.createKey(new TypeParameterProvider<Map<String, TimeSet>>() {
+        }.createTypeInfo(), config.getPath("TMP_I"))
                 .setDefaultValue(myMap);
 
 
@@ -126,7 +125,8 @@ public class ConfigTest {
 
 
         try {
-            YamlBackend yamlBackend = new YamlBackend(new File("/home/jonathan/workspace/Config/src/test/resources/myyaml.yml"));
+
+            YamlBackend yamlBackend = new YamlBackend(new File("src/test/resources/myyaml.yml"));
 
             Config<ID> config1 = new Config<>(yamlBackend);
 
@@ -136,8 +136,8 @@ public class ConfigTest {
 
             System.out.println(key.getValue());
 
-            Key<Map<String, TimeSet>> tempos0 = config1.createKey(new AbstractGenericRepresentation<Map<String, TimeSet>>() {
-            }, config.getPath("TMP_I"))
+            Key<Map<String, TimeSet>> tempos0 = config1.createKey(new TypeParameterProvider<Map<String, TimeSet>>() {
+            }.createTypeInfo(), config.getPath("TMP_I"))
                     .setDefaultValue(myMap);
 
             System.out.println(tempos0.getValue());
@@ -145,12 +145,12 @@ public class ConfigTest {
             Map<TimeSet, TimeSet> myMap2 = MapUtils.mapOf(new TimeSet(0, 0, 0), new TimeSet(1, 50, 0),
                     new TimeSet(1, 50, 0), new TimeSet(10, 40, 0));
 
-            Key<Map<TimeSet, TimeSet>> tempos1 = config1.createKey(new AbstractGenericRepresentation<Map<TimeSet, TimeSet>>() {
-            }, config.getPath("TMP0"))
+            Key<Map<TimeSet, TimeSet>> tempos1 = config1.createKey(new TypeParameterProvider<Map<TimeSet, TimeSet>>() {
+            }.createTypeInfo(), config.getPath("TMP0"))
                     .setDefaultValue(myMap2);
 
-            Key<GenericRepresentation<?>> gen = config1.createKey(new AbstractGenericRepresentation<GenericRepresentation<?>>() {}, config.getPath("09"))
-                    .setDefaultValue(new AbstractGenericRepresentation<List<String>>() {});
+            Key<TypeInfo<?>> gen = config1.createKey(new TypeParameterProvider<TypeInfo<?>>() {}.createTypeInfo(), config.getPath("09"))
+                    .setDefaultValue(new TypeParameterProvider<List<String>>() {}.createTypeInfo());
 
 
 
@@ -207,14 +207,14 @@ public class ConfigTest {
     class TimeSetSerializer implements Serializer<TimeSet> {
 
         @Override
-        public void serialize(TimeSet value, Node node, GenericRepresentation<?> representation) {
+        public void serialize(TimeSet value, Node node, TypeInfo<?> representation) {
             node.getNode("H").setValue(value.getHour(), int.class);
             node.getNode("M").setValue(value.getMinutes(), int.class);
             node.getNode("S").setValue(value.getSeconds(), int.class);
         }
 
         @Override
-        public TimeSet deserialize(Node node, GenericRepresentation<?> representation) {
+        public TimeSet deserialize(Node node, TypeInfo<?> representation) {
             int hour = node.getNode("H").getValue(int.class);
             int minutes = node.getNode("M").getValue(int.class);
             int seconds = node.getNode("S").getValue(int.class);

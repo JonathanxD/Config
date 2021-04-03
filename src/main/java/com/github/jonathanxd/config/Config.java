@@ -3,7 +3,7 @@
  *
  *         The MIT License (MIT)
  *
- *      Copyright (c) 2016 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
+ *      Copyright (c) 2021 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
  *      Copyright (c) contributors
  *
  *
@@ -33,13 +33,9 @@ import com.github.jonathanxd.config.serializer.Serializers;
 import com.github.jonathanxd.config.transformer.Transformer;
 import com.github.jonathanxd.config.value.ValueGetter;
 import com.github.jonathanxd.config.value.ValueSetter;
-import com.github.jonathanxd.iutils.arrays.JwArray;
-import com.github.jonathanxd.iutils.object.GenericRepresentation;
+import com.github.jonathanxd.iutils.type.TypeInfo;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by jonathan on 24/06/16.
@@ -62,28 +58,28 @@ public class Config<T> {
     }
 
 
-    public <V> Key<V> createKey(GenericRepresentation<V> typeRepresentation, Path<T> path) {
+    public <V> Key<V> createKey(TypeInfo<V> typeRepresentation, Path<T> path) {
         return new Key<>(typeRepresentation, path, this);
     }
 
-    public <V> Key<V> createKey(GenericRepresentation<V> typeRepresentation, Path<T> path, Transformer<V> transformer) {
+    public <V> Key<V> createKey(TypeInfo<V> typeRepresentation, Path<T> path, Transformer<V> transformer) {
         return new Key<>(typeRepresentation, path, this, Collections.singletonList(transformer));
     }
 
-    public <V> Key<V> createKey(GenericRepresentation<V> typeRepresentation, Path<T> path, List<Transformer<V>> transformers) {
+    public <V> Key<V> createKey(TypeInfo<V> typeRepresentation, Path<T> path, List<Transformer<V>> transformers) {
         return new Key<>(typeRepresentation, path, this, transformers);
     }
 
     public <V> Key<V> createKey(Class<V> typeRepresentation, Path<T> path) {
-        return new Key<>(GenericRepresentation.aEnd(typeRepresentation), path, this);
+        return new Key<>(TypeInfo.of(typeRepresentation), path, this);
     }
 
     public <V> Key<V> createKey(Class<V> typeRepresentation, Path<T> path, Transformer<V> transformer) {
-        return new Key<>(GenericRepresentation.aEnd(typeRepresentation), path, this, Collections.singletonList(transformer));
+        return new Key<>(TypeInfo.of(typeRepresentation), path, this, Collections.singletonList(transformer));
     }
 
     public <V> Key<V> createKey(Class<V> typeRepresentation, Path<T> path, List<Transformer<V>> transformers) {
-        return new Key<>(GenericRepresentation.aEnd(typeRepresentation), path, this, transformers);
+        return new Key<>(TypeInfo.of(typeRepresentation), path, this, transformers);
     }
 
     public void setTagPath(T tag, Object[] path) {
@@ -143,7 +139,7 @@ public class Config<T> {
     //"a.b\\\\.c.d" => String[4]{"a", "b\", "c", "d"}
 
     private String[] parsePath(String path) {
-        JwArray<String> array = new JwArray<>(String.class);
+        List<String> array = new ArrayList<>();
 
         StringBuilder sb = new StringBuilder();
 
@@ -176,6 +172,6 @@ public class Config<T> {
             sb.setLength(0);
         }
 
-        return array.toGenericArray();
+        return array.toArray(new String[0]);
     }
 }

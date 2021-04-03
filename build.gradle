@@ -1,10 +1,10 @@
 plugins {
-    id 'com.github.hierynomus.license' version '0.11.0'
-    id 'com.github.johnrengelman.shadow' version '1.2.3'
+    id "com.github.hierynomus.license" version "0.15.0"
+    id "com.github.johnrengelman.shadow" version "6.1.0"
 }
 
 group 'com.github.jonathanxd'
-version '1.1.2-SNAPSHOT'
+version '2.4.0-SNAPSHOT'
 
 allprojects {
     apply plugin: 'idea'
@@ -47,11 +47,17 @@ allprojects {
 
 allprojects {
     dependencies {
-        compile 'com.github.JonathanxD:Adapter:2.4.2-SNAPSHOT'
-        compile 'org.yaml:snakeyaml:1.9'
-        compile 'com.github.JonathanxD:JwIUtils:2.3.3'
-        testCompile 'org.mockito:mockito-core:1.10.19'
-        testCompile "junit:junit:4.12"
+        //compile 'com.github.JonathanxD:Adapter:2.4.2-SNAPSHOT'
+        implementation 'org.yaml:snakeyaml:1.9'
+        implementation "com.github.JonathanxD:JwIUtils:4.17.2"
+        implementation 'com.github.JonathanxD.JwIUtils:JwIUtils:4.17.2'
+        implementation 'com.github.JonathanxD.JwIUtils:links:4.17.2'
+        implementation 'com.github.JonathanxD.JwIUtils:json-lang-loader:4.17.2'
+        implementation 'com.github.JonathanxD.JwIUtils:jwiutils-kt:4.17.2'
+        implementation 'com.github.JonathanxD.JwIUtils:properties:4.17.2'
+        implementation 'com.github.JonathanxD.JwIUtils:specializations:4.17.2'
+        testImplementation 'org.mockito:mockito-core:1.10.19'
+        testImplementation "junit:junit:4.12"
     }
 
 }

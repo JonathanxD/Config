@@ -3,7 +3,7 @@
  *
  *         The MIT License (MIT)
  *
- *      Copyright (c) 2016 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
+ *      Copyright (c) 2021 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
  *      Copyright (c) contributors
  *
  *
@@ -27,15 +27,10 @@
  */
 package com.github.jonathanxd.config.common;
 
-import com.github.jonathanxd.config.Path;
 import com.github.jonathanxd.config.backend.AbstractConfigBackend;
-import com.github.jonathanxd.iutils.annotations.NotNull;
-import com.github.jonathanxd.iutils.arrays.JwArray;
 import com.github.jonathanxd.iutils.function.collector.BiCollectors;
-import com.github.jonathanxd.iutils.function.stream.MapStream;
-import com.github.jonathanxd.iutils.object.GenericRepresentation;
-import com.github.jonathanxd.iutils.object.ObjectUtils;
-import com.github.jonathanxd.iutils.string.JString;
+import com.github.jonathanxd.iutils.function.stream.BiStreams;
+import com.github.jonathanxd.iutils.type.TypeInfo;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -46,27 +41,27 @@ import java.util.function.Predicate;
 
 public class MapBackend extends AbstractConfigBackend {
 
-    public static final GenericRepresentation[] SUPPORTED_TYPES = {
-            GenericRepresentation.aEnd(byte.class),
-            GenericRepresentation.aEnd(boolean.class),
-            GenericRepresentation.aEnd(short.class),
-            GenericRepresentation.aEnd(int.class),
-            GenericRepresentation.aEnd(float.class),
-            GenericRepresentation.aEnd(double.class),
-            GenericRepresentation.aEnd(long.class),
-            GenericRepresentation.aEnd(char.class),
-            GenericRepresentation.aEnd(Byte.class),
-            GenericRepresentation.aEnd(Boolean.class),
-            GenericRepresentation.aEnd(Short.class),
-            GenericRepresentation.aEnd(Float.class),
-            GenericRepresentation.aEnd(Double.class),
-            GenericRepresentation.aEnd(Long.class),
-            GenericRepresentation.aEnd(Character.class),
-            GenericRepresentation.aEnd(String.class),
-            GenericRepresentation.aEnd(Number.class),
-            GenericRepresentation.a(List.class).of(String.class).build(),
-            GenericRepresentation.a(List.class).of(Number.class).build(),
-            GenericRepresentation.a(List.class).build()
+    public static final TypeInfo[] SUPPORTED_TYPES = {
+            TypeInfo.of(byte.class),
+            TypeInfo.of(boolean.class),
+            TypeInfo.of(short.class),
+            TypeInfo.of(int.class),
+            TypeInfo.of(float.class),
+            TypeInfo.of(double.class),
+            TypeInfo.of(long.class),
+            TypeInfo.of(char.class),
+            TypeInfo.of(Byte.class),
+            TypeInfo.of(Boolean.class),
+            TypeInfo.of(Short.class),
+            TypeInfo.of(Float.class),
+            TypeInfo.of(Double.class),
+            TypeInfo.of(Long.class),
+            TypeInfo.of(Character.class),
+            TypeInfo.of(String.class),
+            TypeInfo.of(Number.class),
+            TypeInfo.builderOf(List.class).of(String.class).build(),
+            TypeInfo.builderOf(List.class).of(Number.class).build(),
+            TypeInfo.builderOf(List.class).build()
     };
 
     protected final Map<Object, Object> map;
@@ -97,7 +92,7 @@ public class MapBackend extends AbstractConfigBackend {
     }
 
     @Override
-    public <T> void setValueToPath(Object[] path, T value, GenericRepresentation<T> expectedType) {
+    public <T> void setValueToPath(Object[] path, T value, TypeInfo<T> expectedType) {
         setValueToPath(path, value);
     }
 
@@ -204,7 +199,7 @@ public class MapBackend extends AbstractConfigBackend {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> T getValueFromPath(Object[] path, GenericRepresentation<T> expectedType) {
+    public <T> T getValueFromPath(Object[] path, TypeInfo<T> expectedType) {
         return (T) getValueFromPath(path);
     }
 
@@ -227,7 +222,7 @@ public class MapBackend extends AbstractConfigBackend {
     }
 
     private Map<Object, Object> filterKey(Map<Object, Object> in, Predicate<Object> o) {
-        return MapStream.of(in).filter((s, o1) -> o.test(o1)).collect(BiCollectors.toMap());
+        return BiStreams.mapStream(in).filter((s, o1) -> o.test(o1)).collect(BiCollectors.toMap());
     }
 
     @SuppressWarnings("unchecked")
@@ -288,10 +283,10 @@ public class MapBackend extends AbstractConfigBackend {
     }
 
     @Override
-    public boolean isSupported(GenericRepresentation<?> genericRepresentation) {
+    public boolean isSupported(TypeInfo<?> genericRepresentation) {
 
-        for (GenericRepresentation supportedType : SUPPORTED_TYPES) {
-            if (supportedType.compareToAssignable(genericRepresentation) == 0)
+        for (TypeInfo supportedType : SUPPORTED_TYPES) {
+            if (supportedType.compareTypeAndRelatedTo(genericRepresentation) == 0)
                 return true;
         }
 
