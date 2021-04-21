@@ -1,5 +1,5 @@
 /*
- *      Config-Json - Json backend for Config <https://github.com/JonathanxD/Config/>
+ *      Config-Toml - Json backend for Config <https://github.com/JonathanxD/Config/>
  *
  *         The MIT License (MIT)
  *
@@ -25,55 +25,64 @@
  *      OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *      THE SOFTWARE.
  */
-package com.github.jonathanxd.config.backend.json.test;
+package com.github.jonathanxd.config.backend.toml.test;
 
+import com.github.jonathanxd.config.CommonTypes;
 import com.github.jonathanxd.config.Config;
 import com.github.jonathanxd.config.Key;
+import com.github.jonathanxd.config.KeySpec;
 import com.github.jonathanxd.config.backend.ConfigIO;
-import com.github.jonathanxd.config.backend.json.JsonBackend;
+import com.github.jonathanxd.config.backend.toml.TomlBackend;
 import com.github.jonathanxd.iutils.box.IMutableBox;
 import com.github.jonathanxd.iutils.box.MutableBox;
-
-import org.json.simple.parser.JSONParser;
-import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
+import org.tomlj.Toml;
+import org.tomlj.TomlParseResult;
+import org.tomlj.TomlTable;
 
-import java.util.Objects;
+import java.util.Map;
 
-public class JsonBackendTest {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+
+public class TomlBackendTest {
 
     @Test
     public void testToString() {
         IMutableBox<String> box = new MutableBox<>();
 
-        JSONParser jsonParser = new JSONParser();
+        box.set("[project]\n" +
+                "name = 'TOML Backend Loader'\n" +
+                "[server]\n" +
+                "cfg = { port = 8080, addr = \"0.0.0.0\" }");
 
-        JsonBackend jsonBackend = new JsonBackend(jsonParser, ConfigIO.stringBox(box));
+        TomlBackend jsonBackend = new TomlBackend(ConfigIO.stringBox(box));
 
         Config config = new Config(jsonBackend);
-        Key<String> key = config.getRootKey().getKey("backend", String.class);
-        Key<Byte> byteKey = config.getRootKey().getKey("byte", Byte.class);
-        key.setValue("Json backend");
+        config.load();
 
-        byteKey.setValue((byte) 9);
+        Key<Map<Object, Object>> rootKey = config.getRootKey();
+
+        Key<Long> port = rootKey
+                .getKey("server", CommonTypes.MAP_OF_OBJECT)
+                .getKey("cfg", CommonTypes.MAP_OF_OBJECT)
+                .getKey("port", CommonTypes.LONG);
+
+        long loadedPort = port.getValue();
+
+        port.setValue(9090L);
 
         config.save();
 
-        String first = box.get();
+        assertEquals(8080, loadedPort);
+        assertEquals(9090, (long) port.getValue());
 
-        box.set("{\"backend\": \"Json backend Uhu\", \"byte\": 9}");
-
-        config.load();
-
-        Byte b = byteKey.getValue();
-
-        if (!Objects.equals("{\"backend\":\"Json backend\",\"byte\":9}", first)
-                && !Objects.equals("{\"byte\":9,\"backend\":\"Json backend\"}", first)) {
-            Assert.fail("Failed! Obj: " + first);
-        }
-        Assert.assertEquals("Json backend Uhu", key.getValue());
-        Assert.assertEquals(9, (int) b);
+        TomlParseResult parse = Toml.parse(box.get());
+        assertFalse(parse.hasErrors());
+        TomlTable server = parse.getTable("server");
+        TomlTable cfg = server.getTable("cfg");
+        long tomlPort = cfg.getLong("port");
+        assertEquals(9090L, tomlPort);
     }
 
 }

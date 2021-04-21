@@ -74,6 +74,7 @@ public class CommonTypes {
     public static final TypeInfo<TextComponent> TEXT_COMPONENT = TypeInfo.of(TextComponent.class);
 
     public static final TypeInfo<Map> MAP = TypeInfo.of(Map.class);
+    public static final TypeInfo<Map<Object, Object>> MAP_OF_OBJECT = TypeInfo.builderOf(Map.class).of(Object.class, Object.class).buildGeneric();
     public static final TypeInfo<List> LIST = TypeInfo.of(List.class);
 
     public static final TypeInfo<TypeInfo<?>> TYPE_INFO = new TypeParameterProvider<TypeInfo<?>>() {

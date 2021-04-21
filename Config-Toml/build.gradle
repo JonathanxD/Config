@@ -1,0 +1,70 @@
+group 'com.github.jonathanxd'
+
+apply plugin: 'java'
+apply plugin: 'license'
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'Config-Toml',
+                'Implementation-Version': project.version
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven { url "https://jitpack.io" }
+}
+
+dependencies {
+    implementation rootProject
+    implementation "com.github.JonathanxD:JwIUtils:4.17.2"
+    implementation 'com.github.JonathanxD.JwIUtils:JwIUtils:4.17.2'
+    implementation 'com.github.JonathanxD.JwIUtils:links:4.17.2'
+    implementation 'com.github.JonathanxD.JwIUtils:json-lang-loader:4.17.2'
+    implementation 'com.github.JonathanxD.JwIUtils:jwiutils-kt:4.17.2'
+    implementation 'com.github.JonathanxD.JwIUtils:properties:4.17.2'
+    implementation 'com.github.JonathanxD.JwIUtils:specializations:4.17.2'
+    implementation 'org.tomlj:tomlj:1.0.0'
+    testImplementation group: 'junit', name:'junit', version: '4.11'
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: classes) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
+
+license {
+    ext.name = 'Config-Toml'
+    ext.organization = 'TheRealBuggy/JonathanxD (https://github.com/JonathanxD/)'
+    ext.description = 'Json backend for Config'
+    ext.url = 'https://github.com/JonathanxD/Config/'
+    ext.year = Calendar.getInstance().get(Calendar.YEAR)
+    ext.email = 'jonathan.scripter@programmer.net'
+
+    exclude "**/*.info"
+    exclude "**/*.md"
+    exclude "res/**"
+    exclude "src/main/resources/**"
+    exclude "src/test/resources/**"
+
+    header file('../LICENSE_HEADER')
+
+    sourceSets = project.sourceSets
+
+    ignoreFailures false
+    strictCheck true
+
+    mapping {
+        java = 'SLASHSTAR_STYLE'
+    }
+}

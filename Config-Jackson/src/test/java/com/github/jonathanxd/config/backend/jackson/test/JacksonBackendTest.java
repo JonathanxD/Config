@@ -1,5 +1,5 @@
 /*
- *      Config-Json - Json backend for Config <https://github.com/JonathanxD/Config/>
+ *      Config-Jackson - Json backend for Config <https://github.com/JonathanxD/Config/>
  *
  *         The MIT License (MIT)
  *
@@ -25,36 +25,34 @@
  *      OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *      THE SOFTWARE.
  */
-package com.github.jonathanxd.config.backend.json.test;
+package com.github.jonathanxd.config.backend.jackson.test;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.jonathanxd.config.Config;
 import com.github.jonathanxd.config.Key;
 import com.github.jonathanxd.config.backend.ConfigIO;
-import com.github.jonathanxd.config.backend.json.JsonBackend;
+import com.github.jonathanxd.config.backend.jackson.JacksonBackend;
 import com.github.jonathanxd.iutils.box.IMutableBox;
 import com.github.jonathanxd.iutils.box.MutableBox;
-
-import org.json.simple.parser.JSONParser;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Objects;
 
-public class JsonBackendTest {
+public class JacksonBackendTest {
 
     @Test
     public void testToString() {
         IMutableBox<String> box = new MutableBox<>();
 
-        JSONParser jsonParser = new JSONParser();
+        ObjectMapper om = new ObjectMapper();
 
-        JsonBackend jsonBackend = new JsonBackend(jsonParser, ConfigIO.stringBox(box));
+        JacksonBackend jsonBackend = new JacksonBackend(om, ConfigIO.stringBox(box));
 
         Config config = new Config(jsonBackend);
         Key<String> key = config.getRootKey().getKey("backend", String.class);
         Key<Byte> byteKey = config.getRootKey().getKey("byte", Byte.class);
-        key.setValue("Json backend");
+        key.setValue("Jackson backend");
 
         byteKey.setValue((byte) 9);
 
@@ -62,17 +60,18 @@ public class JsonBackendTest {
 
         String first = box.get();
 
-        box.set("{\"backend\": \"Json backend Uhu\", \"byte\": 9}");
+        box.set("{\"backend\": \"Jackson backend Uhu\", \"byte\": 9}");
 
         config.load();
 
         Byte b = byteKey.getValue();
 
-        if (!Objects.equals("{\"backend\":\"Json backend\",\"byte\":9}", first)
-                && !Objects.equals("{\"byte\":9,\"backend\":\"Json backend\"}", first)) {
+        if (!Objects.equals("{\"backend\":\"Jackson backend\",\"byte\":9}", first)
+                && !Objects.equals("{\"byte\":9,\"backend\":\"Jackson backend\"}", first)) {
             Assert.fail("Failed! Obj: " + first);
         }
-        Assert.assertEquals("Json backend Uhu", key.getValue());
+
+        Assert.assertEquals("Jackson backend Uhu", key.getValue());
         Assert.assertEquals(9, (int) b);
     }
 
