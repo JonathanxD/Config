@@ -167,7 +167,7 @@
                     <main>
                         <div style="text-align:center">
 <p><img src="logo.png" alt="LOGO" /></p>
-<p><img src="https://img.shields.io/github/v/tag/JonathanxD/Config?sort=semver" alt="Version" /> <img src="https://img.shields.io/jitpack/v/github/JonathanxD/Config" alt="Jitpack" /></p>
+<p><img src="https://img.shields.io/github/v/tag/JonathanxD/Config?sort=semver" alt="Version" /> <a href="https://jitpack.io#JonathanxD/Config"><img src="https://img.shields.io/jitpack/v/github/JonathanxD/Config" alt="Jitpack" /></a></p>
 </div>
 <p>Config is an agnostic key-based configuration library, built on top of the concept of holding reference to a value in the configuration instead of holding the value itself.</p>
 <h1 id="map-oriented"><a class="header" href="#map-oriented">Map oriented</a></h1>
@@ -183,7 +183,7 @@
 <h1 id="type-information-retention"><a class="header" href="#type-information-retention">Type information retention</a></h1>
 <p>Config depends on types provided by <code>TypeInfo</code> tokens for implementing Serialization for <code>Map</code>, <code>List</code> and user defined types.</p>
 <p>This allows generic types to be serialized correctly and using the right serializer, instead of relying on the type of the object itself. This means that types must be explicitly provided, and the information must be retained at runtime.</p>
-<h1 id="backend"><a class="header" href="#backend">Backend</a></h1>
+<h1 id="backend-class"><a class="header" href="#backend-class"><code>Backend</code> class</a></h1>
 <p>Config itself does not implement any configuration format, instead, it backs the configuration loading and saving logic to a backend.</p>
 <p>Currently, the following backend implementations are officially supported:</p>
 <ul>
@@ -196,10 +196,22 @@
 </ul>
 <p>You could choose one of these backends to load and save your configuration. Also, you are free to write your own Backend implementation, as they are very simple. Config works solely with Java <code>Map</code>, <code>List</code>, <code>String</code> and primitive types.</p>
 <p>Also, Config is not a real-time configuration editor, it will not save the configuration for every update that occurs in the Config object, you need to manually save and load using <code>Config.save</code> and <code>Config.load</code>. If you need a real-time configuration editor with reload capabilities, you could easily write a File Watcher or Scheduler to reload configuration using those methods.</p>
+<h2 id="jackson-backend"><a class="header" href="#jackson-backend">Jackson Backend</a></h2>
+<p>Writes and reads json using Jackson <a href="https://fasterxml.github.io/jackson-databind/javadoc/2.7/com/fasterxml/jackson/databind/ObjectMapper.html">ObjectMapper</a>.</p>
+<h2 id="jackson-xml-backend"><a class="header" href="#jackson-xml-backend">Jackson-XML Backend</a></h2>
+<p>Writes and reads XML using Jackson <a href="https://www.javadoc.io/doc/com.fasterxml.jackson.dataformat/jackson-dataformat-xml/latest/com/fasterxml/jackson/dataformat/xml/XmlMapper.html">XmlMapper</a>.</p>
+<h2 id="json-backend"><a class="header" href="#json-backend">Json backend</a></h2>
+<p>Writes and reads json using <a href="https://code.google.com/archive/p/json-simple/">JSON.simple</a>.</p>
+<h2 id="yaml-backend"><a class="header" href="#yaml-backend">Yaml Backend</a></h2>
+<p>Writes and reads Yaml 1.1 using <a href="https://bitbucket.org/asomov/snakeyaml">snakeyaml</a>.</p>
 <h2 id="toml-backend"><a class="header" href="#toml-backend">Toml Backend</a></h2>
+<p>Reads TOML compliant to 1.0.0-rc.1 using <a href="https://github.com/tomlj/tomlj">tomlj</a> and writes TOML using a custom implementation of TOML rendering.</p>
+<h3 id="note"><a class="header" href="#note">Note</a></h3>
 <p>The Toml backend is able to read any TOML configuration file compliant to 1.0.0-rc.1, however, for writing Toml config, it uses an experimental renderer as there is no recent and maintained Toml library for Java which allows Toml rendering.</p>
 <p>This means that Toml files saved by TOML backend ends up being different from the original, and is not rendered in the best way it could be following the Toml standards.</p>
 <h2 id="yaml-12-backend"><a class="header" href="#yaml-12-backend">YAML 1.2 Backend</a></h2>
+<p>Reads and writes Yaml 1.2 using <a href="https://bitbucket.org/asomov/snakeyaml-engine/">snakeyaml-engine</a>.</p>
+<h3 id="note-1"><a class="header" href="#note-1">Note</a></h3>
 <p>There is a Yaml 1.2 backend which uses snakeyaml-engine to read and write yaml files, however, since <code>Config</code> is fully map-oriented, yaml files which does not have any keys, like this one:</p>
 <pre><code class="language-yaml">- First
 - Second
@@ -257,8 +269,8 @@
     }
 }
 </code></pre>
-<p>However, not all features that Yaml 1.2 supports was tested.</p>
-<h2 id="config"><a class="header" href="#config">Config</a></h2>
+<p>However, not all features that Yaml 1.2 supports were tested.</p>
+<h2 id="config-class"><a class="header" href="#config-class"><code>Config</code> class</a></h2>
 <p>Config is a fully map-based <code>Storage</code> implementation, it uses a <code>LinkedHashMap</code> as storage medium, while checks for supported value types using <code>Backend.supports</code>. Thus, every value stored in this class is directly stored in the wrapped <code>LinkedHashMap</code>, and when configuration need to be saved to file, it just sends an unmodifiable copy of this <code>map</code> to the <code>backend</code> (it must be a copy and unmodifiable to avoid concurrency issues).</p>
 <p>Also, Config is not Thread-safe by default, this means that to concurrently write values, you need to implement a locking logic to allow only one modification at a time. We plan to provide a concurrent capable implementation in the future.</p>
 <h1 id="key"><a class="header" href="#key">Key</a></h1>
@@ -324,7 +336,7 @@ port = 8080
 }
 </code></pre>
 <h2 id="serialization"><a class="header" href="#serialization">Serialization</a></h2>
-<p>Config already implements serializers for basic types and date types, and some JwIUtils library types, such as <code>Text</code> and <code>TypeInfo</code> (you could find all <a href="https://github.com/JonathanxD/Config/blob/master/src/main/java/com/github/jonathanxd/config/serializer/Serializers.java">here</a>), however, sometimes you want to work with your custom types (or 3rd party types) which does not have default serializers implemented, for this, Config provides <code>Serializers</code> class as registry base for <code>Serializer</code> implementations.</p>
+<p>Config already implements serializers for basic types and date types, and some JwIUtils library types, such as <code>Text</code> and <code>TypeInfo</code> (you could find all <a href="https://github.com/JonathanxD/Config/blob/master/src/main/java/com/github/jonathanxd/config/serialize/Serializers.java">here</a>), however, sometimes you want to work with your custom types (or 3rd party types) which does not have default serializers implemented, for this, Config provides <code>Serializers</code> class as registry base for <code>Serializer</code> implementations.</p>
 <h3 id="basic-serializer"><a class="header" href="#basic-serializer">Basic Serializer</a></h3>
 <pre><code class="language-java">record User(String name, String email) {
     

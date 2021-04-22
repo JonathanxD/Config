@@ -219,7 +219,7 @@ port = 8080
 }
 </code></pre>
 <h2 id="serialization"><a class="header" href="#serialization">Serialization</a></h2>
-<p>Config already implements serializers for basic types and date types, and some JwIUtils library types, such as <code>Text</code> and <code>TypeInfo</code> (you could find all <a href="https://github.com/JonathanxD/Config/blob/master/src/main/java/com/github/jonathanxd/config/serializer/Serializers.java">here</a>), however, sometimes you want to work with your custom types (or 3rd party types) which does not have default serializers implemented, for this, Config provides <code>Serializers</code> class as registry base for <code>Serializer</code> implementations.</p>
+<p>Config already implements serializers for basic types and date types, and some JwIUtils library types, such as <code>Text</code> and <code>TypeInfo</code> (you could find all <a href="https://github.com/JonathanxD/Config/blob/master/src/main/java/com/github/jonathanxd/config/serialize/Serializers.java">here</a>), however, sometimes you want to work with your custom types (or 3rd party types) which does not have default serializers implemented, for this, Config provides <code>Serializers</code> class as registry base for <code>Serializer</code> implementations.</p>
 <h3 id="basic-serializer"><a class="header" href="#basic-serializer">Basic Serializer</a></h3>
 <pre><code class="language-java">record User(String name, String email) {
     

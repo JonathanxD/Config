@@ -67,7 +67,7 @@ public class ServerConfig {
 
 ## Serialization
 
-Config already implements serializers for basic types and date types, and some JwIUtils library types, such as `Text` and `TypeInfo` (you could find all [here](https://github.com/JonathanxD/Config/blob/master/src/main/java/com/github/jonathanxd/config/serializer/Serializers.java)), however, sometimes you want to work with your custom types (or 3rd party types) which does not have default serializers implemented, for this, Config provides `Serializers` class as registry base for `Serializer` implementations.
+Config already implements serializers for basic types and date types, and some JwIUtils library types, such as `Text` and `TypeInfo` (you could find all [here](https://github.com/JonathanxD/Config/blob/master/src/main/java/com/github/jonathanxd/config/serialize/Serializers.java)), however, sometimes you want to work with your custom types (or 3rd party types) which does not have default serializers implemented, for this, Config provides `Serializers` class as registry base for `Serializer` implementations.
 
 ### Basic Serializer
 

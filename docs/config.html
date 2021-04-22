@@ -163,7 +163,7 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h2 id="config"><a class="header" href="#config">Config</a></h2>
+                        <h2 id="config-class"><a class="header" href="#config-class"><code>Config</code> class</a></h2>
 <p>Config is a fully map-based <code>Storage</code> implementation, it uses a <code>LinkedHashMap</code> as storage medium, while checks for supported value types using <code>Backend.supports</code>. Thus, every value stored in this class is directly stored in the wrapped <code>LinkedHashMap</code>, and when configuration need to be saved to file, it just sends an unmodifiable copy of this <code>map</code> to the <code>backend</code> (it must be a copy and unmodifiable to avoid concurrency issues).</p>
 <p>Also, Config is not Thread-safe by default, this means that to concurrently write values, you need to implement a locking logic to allow only one modification at a time. We plan to provide a concurrent capable implementation in the future.</p>
 

@@ -1,4 +1,4 @@
-## Config
+## `Config` class
 
 Config is a fully map-based `Storage` implementation, it uses a `LinkedHashMap` as storage medium, while checks for supported value types using `Backend.supports`. Thus, every value stored in this class is directly stored in the wrapped `LinkedHashMap`, and when configuration need to be saved to file, it just sends an unmodifiable copy of this `map` to the `backend` (it must be a copy and unmodifiable to avoid concurrency issues).
 

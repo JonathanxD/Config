@@ -1,4 +1,4 @@
-# Backend
+# `Backend` class
 
 Config itself does not implement any configuration format, instead, it backs the configuration loading and saving logic to a backend.
 
@@ -15,13 +15,37 @@ You could choose one of these backends to load and save your configuration. Also
 
 Also, Config is not a real-time configuration editor, it will not save the configuration for every update that occurs in the Config object, you need to manually save and load using `Config.save` and `Config.load`. If you need a real-time configuration editor with reload capabilities, you could easily write a File Watcher or Scheduler to reload configuration using those methods.
 
+## Jackson Backend
+
+Writes and reads json using Jackson [ObjectMapper](https://fasterxml.github.io/jackson-databind/javadoc/2.7/com/fasterxml/jackson/databind/ObjectMapper.html).
+
+## Jackson-XML Backend
+
+Writes and reads XML using Jackson [XmlMapper](https://www.javadoc.io/doc/com.fasterxml.jackson.dataformat/jackson-dataformat-xml/latest/com/fasterxml/jackson/dataformat/xml/XmlMapper.html).
+
+## Json backend
+
+Writes and reads json using [JSON.simple](https://code.google.com/archive/p/json-simple/).
+
+## Yaml Backend
+
+Writes and reads Yaml 1.1 using [snakeyaml](https://bitbucket.org/asomov/snakeyaml).
+
 ## Toml Backend
+
+Reads TOML compliant to 1.0.0-rc.1 using [tomlj](https://github.com/tomlj/tomlj) and writes TOML using a custom implementation of TOML rendering.
+
+### Note
 
 The Toml backend is able to read any TOML configuration file compliant to 1.0.0-rc.1, however, for writing Toml config, it uses an experimental renderer as there is no recent and maintained Toml library for Java which allows Toml rendering.
 
 This means that Toml files saved by TOML backend ends up being different from the original, and is not rendered in the best way it could be following the Toml standards.
 
 ## YAML 1.2 Backend
+
+Reads and writes Yaml 1.2 using [snakeyaml-engine](https://bitbucket.org/asomov/snakeyaml-engine/).
+
+### Note
 
 There is a Yaml 1.2 backend which uses snakeyaml-engine to read and write yaml files, however, since `Config` is fully map-oriented, yaml files which does not have any keys, like this one:
 
@@ -101,4 +125,4 @@ public class ConfigLoader {
 }
 ```
 
-However, not all features that Yaml 1.2 supports was tested.
+However, not all features that Yaml 1.2 supports were tested.
