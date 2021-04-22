@@ -1,9 +1,9 @@
 /*
- *      Config - Configuration API. <https://github.com/JonathanxD/Config>
+ *      Config - Configuration library <https://github.com/JonathanxD/Config>
  *
  *         The MIT License (MIT)
  *
- *      Copyright (c) 2021 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/ & https://github.com/TheRealBuggy/) <jonathan.scripter@programmer.net>
+ *      Copyright (c) 2021 TheRealBuggy/JonathanxD (https://github.com/JonathanxD/) <jonathan.scripter@programmer.net>
  *      Copyright (c) contributors
  *
  *
@@ -27,151 +27,175 @@
  */
 package com.github.jonathanxd.config;
 
-import com.github.jonathanxd.config.backend.ConfigBackend;
-import com.github.jonathanxd.config.key.Key;
-import com.github.jonathanxd.config.serializer.Serializers;
-import com.github.jonathanxd.config.transformer.Transformer;
-import com.github.jonathanxd.config.value.ValueGetter;
-import com.github.jonathanxd.config.value.ValueSetter;
+import com.github.jonathanxd.config.backend.Backend;
+import com.github.jonathanxd.config.serialize.Serializers;
 import com.github.jonathanxd.iutils.type.TypeInfo;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
- * Created by jonathan on 24/06/16.
+ * Configuration front-end. Values are stored in this {@link Storage ConfigStorage}, and later saved
+ * and loaded from {@link Backend} through {@link #save()} and {@link #load()} in form of a {@link
+ * Map}.
+ *
+ * Keys uses {@link Storage} to save and retrieve their values, also {@link Storage} is used by
+ * serialization and deserialization of objects.
  */
-public class Config<T> {
+public class Config extends Storage {
 
-    private final Map<T, Object[]> pathTag = new HashMap<>();
+    /**
+     * Root Map type.
+     */
+    private static final TypeInfo<Map<Object, Object>> TYPE = TypeInfo.builderOf(Map.class).of(Object.class, Object.class).buildGeneric();
 
-    private final ConfigBackend backend;
+    /**
+     * Root map
+     */
+    private final Map<Object, Object> map = new LinkedHashMap<>();
 
-    private final Serializers serializers = new Serializers();
+    /**
+     * Serializers
+     */
+    private final Serializers serializers;
 
-    private final ValueSetter valueSetter;
-    private final ValueGetter valueGetter;
+    /**
+     * Root key.
+     */
+    private final Key<Map<Object, Object>> root = new RootKey(this);
 
-    public Config(ConfigBackend backend) {
+    /**
+     * Backend saver and loader.
+     */
+    private final Backend backend;
+
+    /**
+     * Creates a configuration backing save and load operations to a {@link Backend}.
+     *
+     * @param backend Backend to save and load configuration.
+     */
+    public Config(Backend backend) {
+        this(backend, new Serializers());
+    }
+
+    /**
+     * Creates a configuration backing save and load operations to a {@link Backend}.
+     *
+     * @param backend     Backend to save and load configuration.
+     * @param serializers Serializers instance to use to manage serializers.
+     */
+    public Config(Backend backend, Serializers serializers) {
         this.backend = backend;
-        this.valueSetter = new ValueSetter(this, backend);
-        this.valueGetter = new ValueGetter(this, backend);
+        this.serializers = serializers;
+        this.getBackend().registerSerializers(this.getSerializers());
     }
 
-
-    public <V> Key<V> createKey(TypeInfo<V> typeRepresentation, Path<T> path) {
-        return new Key<>(typeRepresentation, path, this);
+    /**
+     * Gets the config backend.
+     *
+     * @return Config backend.
+     */
+    public Backend getBackend() {
+        return this.backend;
     }
 
-    public <V> Key<V> createKey(TypeInfo<V> typeRepresentation, Path<T> path, Transformer<V> transformer) {
-        return new Key<>(typeRepresentation, path, this, Collections.singletonList(transformer));
+    /**
+     * Gets the root key.
+     *
+     * @return Root key.
+     */
+    public Key<?> getRootKey() {
+        return this.getBackend().resolveRoot(this.root);
     }
 
-    public <V> Key<V> createKey(TypeInfo<V> typeRepresentation, Path<T> path, List<Transformer<V>> transformers) {
-        return new Key<>(typeRepresentation, path, this, transformers);
-    }
-
-    public <V> Key<V> createKey(Class<V> typeRepresentation, Path<T> path) {
-        return new Key<>(TypeInfo.of(typeRepresentation), path, this);
-    }
-
-    public <V> Key<V> createKey(Class<V> typeRepresentation, Path<T> path, Transformer<V> transformer) {
-        return new Key<>(TypeInfo.of(typeRepresentation), path, this, Collections.singletonList(transformer));
-    }
-
-    public <V> Key<V> createKey(Class<V> typeRepresentation, Path<T> path, List<Transformer<V>> transformers) {
-        return new Key<>(TypeInfo.of(typeRepresentation), path, this, transformers);
-    }
-
-    public void setTagPath(T tag, Object[] path) {
-        pathTag.put(tag, path);
-    }
-
-    public void setTagPath(T tag, Path<T> subPath) {
-        pathTag.put(tag, subPath.path);
-    }
-
-    public Path<T> getTagPath(T tag) {
-        return getPath(pathTag.get(tag));
-    }
-
-    public Path<T> getPath(Object[] path) {
-        return new Path<>(this, path);
-    }
-
-    public Path<T> getPath(Object path) {
-        if(path instanceof Object[]) {
-            return getPath((Object[]) path);
-        } else {
-            return new Path<>(this, new Object[]{path});
-        }
-    }
-
-    /*
-    public Path<T> getFullPath(Object[] path) {
-        return getPath(parsePath(path));
-    }
-
-    public Path<T> getPath(Object... path) {
-        return new Path<>(this, path);
-    }*/
-
-    public Object[] getPathForTag(T tag) {
-        return pathTag.get(tag);
-    }
-
-    public ConfigBackend getBackend() {
-        return backend;
-    }
-
+    /**
+     * Gets the {@link Serializers serializer manager} instance.
+     *
+     * @return {@link Serializers Serializer manager} instance.
+     */
     public Serializers getSerializers() {
-        return serializers;
+        return this.serializers;
     }
 
-    public ValueGetter getValueGetter() {
-        return valueGetter;
+    /**
+     * Saves the configuration.
+     */
+    public void save() {
+        this.backend.save(Collections.unmodifiableMap(new LinkedHashMap<>(this.map)));
     }
 
-    public ValueSetter getValueSetter() {
-        return valueSetter;
+    /**
+     * Loads the configuration.
+     */
+    public void load() {
+        this.map.clear();
+        this.map.putAll(this.backend.load());
     }
 
-    //"a.b\\.c.d" => String[3]{"a", "b.c", "d"}
-    //"a.b\\\\.c.d" => String[4]{"a", "b\", "c", "d"}
+    // Storage
 
-    private String[] parsePath(String path) {
-        List<String> array = new ArrayList<>();
 
-        StringBuilder sb = new StringBuilder();
+    @Override
+    public void pushValue(Key<?> key, Object value) {
+        this.map.put(key.getName(), value);
+    }
 
-        char[] chars = path.toCharArray();
-        boolean escape = false;
+    @Override
+    public Object fetchValue(Key<?> key) {
+        if (!this.exists(key))
+            throw new KeyNotFoundException(key);
 
-        for (int i = 0; i < chars.length; i++) {
-            char currentChar = chars[i];
+        return this.map.get(key.getName());
+    }
 
-            if (i == 0) {
-                sb.append(currentChar);
-            } else {
-                if (currentChar == '\\' && !escape) {
-                    escape = true;
-                } else if (escape) {
-                    escape = false;
-                    sb.append(currentChar);
-                } else if (currentChar == '.') {
-                    array.add(sb.toString());
-                    sb.setLength(0);
-                } else {
-                    sb.append(currentChar);
-                }
-            }
+    @Override
+    public boolean exists(Key<?> key) {
+        return this.map.containsKey(key.getName());
+    }
+
+    @Override
+    public Config getConfig() {
+        return this;
+    }
+
+    @Override
+    public String toString() {
+        return "Config[entries=" + this.map.size() + "]";
+    }
+
+    /**
+     * Root configuration key, the {@link Storage storage} of this key is the same as {@link Config
+     * enclosing config}, children uses the same {@link Storage storage} as this key, but sets the
+     * entry of the map instead of the entire map.
+     */
+    class RootKey extends Key<Map<Object, Object>> {
+
+        /**
+         * Creates a root key.
+         *
+         * @param config Configuration,
+         */
+        RootKey(Config config) {
+            super(config, null, "root", TYPE, Config.this, null);
         }
 
-
-        if (sb.length() > 0) {
-            array.add(sb.toString());
-            sb.setLength(0);
+        @Override
+        public <V> Key<V> getKey(String name, TypeInfo<V> typeInfo) {
+            return new Key<>(Config.this, this, name, typeInfo, this.getStorage(), null);
         }
 
-        return array.toArray(new String[0]);
+        @Override
+        public Map<Object, Object> getValue() {
+            return Config.this.map;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public void setValue(Map<Object, Object> value) {
+            Map<Object, Object> map = this.getValue();
+            map.clear();
+            map.putAll(value);
+        }
     }
 }

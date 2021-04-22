@@ -3,7 +3,7 @@
 out
 gen
 build
-
+docs/book/**
 
 # Gradle file
 .gradle

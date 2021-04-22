@@ -1,27 +1,13 @@
-plugins {
-    id "com.github.hierynomus.license" version "0.15.0"
-    id "com.github.johnrengelman.shadow" version "6.1.0"
-}
-
 group 'com.github.jonathanxd'
 
-apply plugin: 'idea'
 apply plugin: 'java'
 apply plugin: 'license'
-apply plugin: 'com.github.johnrengelman.shadow'
 
-license {
-    header rootProject.file("LICENSE_HEADER")
-}
-
-defaultTasks 'licenseFormat', 'build', 'test', 'jar', 'shadowJar'
-
-sourceCompatibility = 1.8
-
-// Setup
-
-ext {
-    description = "Configuration API."
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'Config-Yaml',
+                'Implementation-Version': project.version
+    }
 }
 
 repositories {
@@ -30,6 +16,7 @@ repositories {
 }
 
 dependencies {
+    implementation rootProject
     implementation "com.github.JonathanxD:JwIUtils:4.17.2"
     implementation 'com.github.JonathanxD.JwIUtils:JwIUtils:4.17.2'
     implementation 'com.github.JonathanxD.JwIUtils:links:4.17.2'
@@ -37,18 +24,9 @@ dependencies {
     implementation 'com.github.JonathanxD.JwIUtils:jwiutils-kt:4.17.2'
     implementation 'com.github.JonathanxD.JwIUtils:properties:4.17.2'
     implementation 'com.github.JonathanxD.JwIUtils:specializations:4.17.2'
-    testImplementation 'org.yaml:snakeyaml:1.9'
-    testImplementation "junit:junit:4.12"
-}
-
-// Tasks
-jar {
-    from "$rootProject.rootDir/LICENSE"
-
-    manifest {
-        attributes 'Implementation-Title': baseName,
-                'Implementation-Version': version
-    }
+    implementation "com.googlecode.json-simple:json-simple:1.1.1"
+    implementation 'org.yaml:snakeyaml:1.9'
+    testImplementation group: 'junit', name:'junit', version: '4.11'
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
@@ -56,7 +34,7 @@ task sourcesJar(type: Jar, dependsOn: classes) {
     from sourceSets.main.allSource
 }
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
+task javadocJar(type: Jar, dependsOn: classes) {
     classifier = 'javadoc'
     from javadoc.destinationDir
 }
@@ -67,10 +45,10 @@ artifacts {
 }
 
 license {
-    ext.name = project.name
-    ext.organization = project.organization
-    ext.description = project.description
-    ext.url = "https://github.com/JonathanxD/Config"
+    ext.name = 'Config-Yaml'
+    ext.organization = 'TheRealBuggy/JonathanxD (https://github.com/JonathanxD/)'
+    ext.description = 'Yaml backend for Config'
+    ext.url = 'https://github.com/JonathanxD/Config/'
     ext.year = Calendar.getInstance().get(Calendar.YEAR)
     ext.email = 'jonathan.scripter@programmer.net'
 
@@ -80,7 +58,7 @@ license {
     exclude "src/main/resources/**"
     exclude "src/test/resources/**"
 
-    header rootProject.file('LICENSE_HEADER')
+    header file('../LICENSE_HEADER')
 
     sourceSets = project.sourceSets
 

@@ -1,0 +1,6 @@
+[book]
+authors = ["Jonathan"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Config Documentation"
