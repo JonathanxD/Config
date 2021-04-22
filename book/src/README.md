@@ -1,6 +1,7 @@
 <div style="text-align:center">
 
 ![LOGO](logo.png)
+
 ![Version](https://img.shields.io/github/v/tag/JonathanxD/Config?sort=semver) ![Jitpack](https://img.shields.io/jitpack/v/github/JonathanxD/Config)
 </div>
 
