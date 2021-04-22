@@ -246,17 +246,26 @@ public class Config extends Storage {
             return this.getKey(name, type).getAs(name, type, storage);
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public X getValue() {
-            return (X) Config.this.map;
+            if (super.getTypeInfo().equals(TYPE)) {
+                return (X) Config.this.map;
+            } else {
+                return (X) super.getStorage().get(this);
+            }
         }
 
         @SuppressWarnings("unchecked")
         @Override
         public void setValue(X value) {
-            Map<Object, Object> map = (Map<Object, Object>) this.getValue();
-            map.clear();
-            map.putAll((Map<?, ?>) value);
+            if (super.getTypeInfo().equals(TYPE)) {
+                Map<Object, Object> map = (Map<Object, Object>) this.getValue();
+                map.clear();
+                map.putAll((Map<?, ?>) value);
+            } else {
+                super.getStorage().store(this, value);
+            }
         }
     }
 }

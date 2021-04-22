@@ -30,10 +30,14 @@ package com.github.jonathanxd.config.backend.jackson.test;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.jonathanxd.config.Config;
 import com.github.jonathanxd.config.Key;
+import com.github.jonathanxd.config.Storage;
 import com.github.jonathanxd.config.backend.ConfigIO;
 import com.github.jonathanxd.config.backend.jackson.JacksonBackend;
+import com.github.jonathanxd.config.serialize.Serializer;
+import com.github.jonathanxd.config.serialize.Serializers;
 import com.github.jonathanxd.iutils.box.IMutableBox;
 import com.github.jonathanxd.iutils.box.MutableBox;
+import com.github.jonathanxd.iutils.type.TypeInfo;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -73,6 +77,83 @@ public class JacksonBackendTest {
 
         Assert.assertEquals("Jackson backend Uhu", key.getValue());
         Assert.assertEquals(9, (int) b);
+    }
+
+    @Test
+    public void testUserSer() {
+        IMutableBox<String> box = new MutableBox<>();
+
+        ObjectMapper om = new ObjectMapper();
+
+        JacksonBackend jsonBackend = new JacksonBackend(om, ConfigIO.stringBox(box));
+
+        Config config = new Config(jsonBackend);
+        config.getSerializers().register(TypeInfo.of(User.class), new UserSerializer());
+        box.set("{\"name\": \"Test\", \"email\": \"examples@example.com\"}");
+
+        config.load();
+
+        Key<User> root = config.getRootKey().getAs(User.class);
+
+        User value = root.getValue();
+
+        Assert.assertEquals("User{name='Test', email='examples@example.com'}", value.toString());
+
+        root.setValue(new User("Test2", "examples@example.com"));
+
+        Assert.assertEquals("User{name='Test2', email='examples@example.com'}", root.getValue().toString());
+        config.save();
+        Assert.assertEquals("{\"name\":\"Test2\",\"email\":\"examples@example.com\"}", box.getValue());
+    }
+
+    public static class UserSerializer implements Serializer<User> {
+        @Override
+        public void serialize(User value,
+                              Key<User> key,
+                              TypeInfo<?> typeInfo,
+                              Storage storage,
+                              Serializers serializers) {
+            key.getKey("name", String.class).setValue(value.getName());
+            key.getKey("email", String.class).setValue(value.getEmail());
+        }
+
+        @Override
+        public User deserialize(Key<User> key,
+                                TypeInfo<?> typeInfo,
+                                Storage storage,
+                                Serializers serializers) {
+
+            String name = key.getKey("name", String.class).getValue();
+            String email = key.getKey("email", String.class).getValue();
+
+            return new User(name, email);
+        }
+    }
+
+    public static final class User {
+        private final String name;
+        private final String email;
+
+        public User(String name, String email) {
+            this.name = name;
+            this.email = email;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getEmail() {
+            return email;
+        }
+
+        @Override
+        public String toString() {
+            return "User{" +
+                    "name='" + name + '\'' +
+                    ", email='" + email + '\'' +
+                    '}';
+        }
     }
 
 }
