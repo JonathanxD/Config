@@ -1,6 +1,7 @@
 <div style="text-align:center">
 
 ![LOGO](logo.png)
+![Version](https://img.shields.io/github/v/tag/JonathanxD/Config?sort=semver) ![Jitpack](https://img.shields.io/jitpack/v/github/JonathanxD/Config)
 </div>
 
 Config is an agnostic key-based configuration library, built on top of the concept of holding reference to a value in the configuration instead of holding the value itself.
