@@ -97,7 +97,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="backend.html"><strong aria-hidden="true">1.1.</strong> Backends</a></li><li class="chapter-item expanded "><a href="config.html"><strong aria-hidden="true">1.2.</strong> Config class</a></li><li class="chapter-item expanded "><a href="key_and_keyspec.html"><strong aria-hidden="true">1.3.</strong> Key and KeySpace</a></li><li class="chapter-item expanded "><a href="serializers.html"><strong aria-hidden="true">1.4.</strong> Serializers</a></li><li class="chapter-item expanded "><a href="getting_started.html"><strong aria-hidden="true">1.5.</strong> Getting Started</a></li></ol></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="getting_started.html"><strong aria-hidden="true">1.1.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="backend.html"><strong aria-hidden="true">1.2.</strong> Backends</a></li><li class="chapter-item expanded "><a href="config.html"><strong aria-hidden="true">1.3.</strong> Config class</a></li><li class="chapter-item expanded "><a href="key_and_keyspec.html"><strong aria-hidden="true">1.4.</strong> Key and KeySpace</a></li><li class="chapter-item expanded "><a href="serializers.html"><strong aria-hidden="true">1.5.</strong> Serializers</a></li></ol></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -183,103 +183,6 @@
 <h1 id="type-information-retention"><a class="header" href="#type-information-retention">Type information retention</a></h1>
 <p>Config depends on types provided by <code>TypeInfo</code> tokens for implementing Serialization for <code>Map</code>, <code>List</code> and user defined types.</p>
 <p>This allows generic types to be serialized correctly and using the right serializer, instead of relying on the type of the object itself. This means that types must be explicitly provided, and the information must be retained at runtime.</p>
-<h1 id="backend-class"><a class="header" href="#backend-class"><code>Backend</code> class</a></h1>
-<p>Config itself does not implement any configuration format, instead, it backs the configuration loading and saving logic to a backend.</p>
-<p>Currently, the following backend implementations are officially supported:</p>
-<ul>
-<li>Config-Jackson (Using <a href="https://github.com/FasterXML/jackson">fasterxml.jackson</a>)</li>
-<li>Config-XML (Using <a href="https://github.com/FasterXML/jackson-dataformat-xml">fasterxml.jackson-xml</a>)</li>
-<li>Config-Json (Using <a href="https://github.com/fangyidong/json-simple">JSON.simple</a>)</li>
-<li>Config-Yaml (Using <a href="https://bitbucket.org/asomov/snakeyaml/">snakeyaml</a> YAML 1.1 compliant)</li>
-<li>Config-Yaml-1.2 (Using <a href="https://bitbucket.org/asomov/snakeyaml-engine/">snakeyaml-engine</a> YAML 1.2 compliant)</li>
-<li>Config-Toml (Using <a href="https://github.com/tomlj/tomlj">tomlj</a> 1.0.0-rc.1 compliant. With an experimental renderer, as of the time the implementation was written, there is no official TOML writer for Java).</li>
-</ul>
-<p>You could choose one of these backends to load and save your configuration. Also, you are free to write your own Backend implementation, as they are very simple. Config works solely with Java <code>Map</code>, <code>List</code>, <code>String</code> and primitive types.</p>
-<p>Also, Config is not a real-time configuration editor, it will not save the configuration for every update that occurs in the Config object, you need to manually save and load using <code>Config.save</code> and <code>Config.load</code>. If you need a real-time configuration editor with reload capabilities, you could easily write a File Watcher or Scheduler to reload configuration using those methods.</p>
-<h2 id="jackson-backend"><a class="header" href="#jackson-backend">Jackson Backend</a></h2>
-<p>Writes and reads json using Jackson <a href="https://fasterxml.github.io/jackson-databind/javadoc/2.7/com/fasterxml/jackson/databind/ObjectMapper.html">ObjectMapper</a>.</p>
-<h2 id="jackson-xml-backend"><a class="header" href="#jackson-xml-backend">Jackson-XML Backend</a></h2>
-<p>Writes and reads XML using Jackson <a href="https://www.javadoc.io/doc/com.fasterxml.jackson.dataformat/jackson-dataformat-xml/latest/com/fasterxml/jackson/dataformat/xml/XmlMapper.html">XmlMapper</a>.</p>
-<h2 id="json-backend"><a class="header" href="#json-backend">Json backend</a></h2>
-<p>Writes and reads json using <a href="https://code.google.com/archive/p/json-simple/">JSON.simple</a>.</p>
-<h2 id="yaml-backend"><a class="header" href="#yaml-backend">Yaml Backend</a></h2>
-<p>Writes and reads Yaml 1.1 using <a href="https://bitbucket.org/asomov/snakeyaml">snakeyaml</a>.</p>
-<h2 id="toml-backend"><a class="header" href="#toml-backend">Toml Backend</a></h2>
-<p>Reads TOML compliant to 1.0.0-rc.1 using <a href="https://github.com/tomlj/tomlj">tomlj</a> and writes TOML using a custom implementation of TOML rendering.</p>
-<h3 id="note"><a class="header" href="#note">Note</a></h3>
-<p>The Toml backend is able to read any TOML configuration file compliant to 1.0.0-rc.1, however, for writing Toml config, it uses an experimental renderer as there is no recent and maintained Toml library for Java which allows Toml rendering.</p>
-<p>This means that Toml files saved by TOML backend ends up being different from the original, and is not rendered in the best way it could be following the Toml standards.</p>
-<h2 id="yaml-12-backend"><a class="header" href="#yaml-12-backend">YAML 1.2 Backend</a></h2>
-<p>Reads and writes Yaml 1.2 using <a href="https://bitbucket.org/asomov/snakeyaml-engine/">snakeyaml-engine</a>.</p>
-<h3 id="note-1"><a class="header" href="#note-1">Note</a></h3>
-<p>There is a Yaml 1.2 backend which uses snakeyaml-engine to read and write yaml files, however, since <code>Config</code> is fully map-oriented, yaml files which does not have any keys, like this one:</p>
-<pre><code class="language-yaml">- First
-- Second
-- Third
-</code></pre>
-<p>Are loaded normally, but an intermediate section is created, named <code>.</code>. This section allows loading those values normally, and rendering them is made through a special logic which keeps this structure (as long as there is no new keys defined).</p>
-<p>Also, <code>Config</code> calls the <code>Backend</code> to resolve the root key, then the Yaml backend resolve the <code>.</code> as default key, thus allowing to load those values seamlessly without careing about the intermediate section:</p>
-<pre><code class="language-java">public class ConfigLoader {
-    public static Config loadYaml() {
-        // Yaml loading logic...
-        Config config = new Config(new YamlBackend(...));
-        TypeInfo&lt;List&lt;String&gt;&gt; stringListTypeInfo = TypeInfo.builderOf(List.class).of(String.class).buildGeneric();
-        Key&lt;List&lt;String&gt;&gt; values = config.getRootKey().getAs(stringListTypeInfo);
-    }
-}
-</code></pre>
-<p>It is important to know this, because creating a configuration with a key named <code>.</code> with a List value will trigger this behavior. But only for Yaml 1.2 backend.</p>
-<h3 id="maps-inside-the-list"><a class="header" href="#maps-inside-the-list">Maps inside the List</a></h3>
-<p>When there is a map inside the list, like this:</p>
-<pre><code class="language-yaml">- First
-- Second
-- Third
-- Somedata: value
-</code></pre>
-<p>Config will be able to handle this situation, but with limited capabilities. It is able to resolve the <code>somedata</code> key and change its value:</p>
-<pre><code class="language-java">public class ConfigLoader {
-    public static Config loadYaml() {
-        // Yaml loading logic...
-        Config config = new Config(new YamlBackend(...));
-        Key&lt;List&lt;Object&gt;&gt; values = config.getRootKey().getAs(CommonTypes.LIST_OF_OBJECT);
-        Key&lt;String&gt; somedata = values.getKey(&quot;somedata&quot;, String.class);
-        somedata.setValue(&quot;newValue&quot;);
-    }
-}
-</code></pre>
-<p>It is able to create new maps inside the list when needed:</p>
-<pre><code class="language-java">public class ConfigLoader {
-    public static Config loadYaml() {
-        // Yaml loading logic...
-        Config config = new Config(new YamlBackend(...));
-        Key&lt;List&lt;Object&gt;&gt; values = config.getRootKey().getAs(CommonTypes.LIST_OF_OBJECT);
-        Key&lt;String&gt; somedata = values.getKey(&quot;somedata2&quot;, String.class); // new map is created to handle this key
-        somedata.setValue(&quot;newValue2&quot;); 
-    }
-}
-</code></pre>
-<p>And access and change values in a specific index of a list (which must exists):</p>
-<pre><code class="language-java">public class ConfigLoader {
-    public static Config loadYaml() {
-        // Yaml loading logic...
-        Config config = new Config(new YamlBackend(...));
-        Key&lt;List&lt;Object&gt;&gt; values = config.getRootKey().getAs(CommonTypes.LIST_OF_OBJECT);
-        Key&lt;String&gt; index0 = IndexKey.forKeyAndIndex(values, 0);
-        index0.setValue(&quot;newValue2&quot;); 
-    }
-}
-</code></pre>
-<p>However, not all features that Yaml 1.2 supports were tested.</p>
-<h2 id="config-class"><a class="header" href="#config-class"><code>Config</code> class</a></h2>
-<p>Config is a fully map-based <code>Storage</code> implementation, it uses a <code>LinkedHashMap</code> as storage medium, while checks for supported value types using <code>Backend.supports</code>. Thus, every value stored in this class is directly stored in the wrapped <code>LinkedHashMap</code>, and when configuration need to be saved to file, it just sends an unmodifiable copy of this <code>map</code> to the <code>backend</code> (it must be a copy and unmodifiable to avoid concurrency issues).</p>
-<p>Also, Config is not Thread-safe by default, this means that to concurrently write values, you need to implement a locking logic to allow only one modification at a time. We plan to provide a concurrent capable implementation in the future.</p>
-<h1 id="key"><a class="header" href="#key">Key</a></h1>
-<p>The most important class of the Config library. A <strong>Key</strong> represents a pointer to a value in the configuration file, tied to a <strong>key-path</strong>. With this pointer you are able to read and write values directly to the <code>Storage</code> medium without even needing to hold a reference to the <code>Storage</code> itself. Also, you could have different pointers to the same value, and changing a value through one pointer will be reflected in all other pointers (they are not really reflected, they just read the value from the same path, so if the value changes, anyone pointing to this path has access to the new value).</p>
-<h1 id="keyspec"><a class="header" href="#keyspec">KeySpec</a></h1>
-<p>Is a specification of a <code>Key</code> name and type, with <code>KeySpec</code> you refer to a part of the key path. It is used to implement a more readable <code>Key</code> access with constant path parts.</p>
-<h1 id="serializers"><a class="header" href="#serializers">Serializers</a></h1>
-<p>Config also supports serializers. This is very important for the library as it only works with <code>Maps</code>, <code>Lists</code>, <code>Strings</code> and primitive types (different backends could provide support for others types, but the official ones does not).</p>
-<p>Serializers are registered and provided through <code>Serializers</code> class, custom serializers must implement <code>Serializer</code> interface and be registered in <code>Config.getSerializers</code>.</p>
 <h1 id="getting-started"><a class="header" href="#getting-started">Getting Started</a></h1>
 <p>Config and official backends are available through <a href="https://jitpack.io/#JonathanxD/Config">jitpack.io</a>.</p>
 <h3 id="gradle-kotlin"><a class="header" href="#gradle-kotlin">Gradle (Kotlin)</a></h3>
@@ -467,6 +370,103 @@ public class UserSerializer implements Serializer&lt;User&gt; {
 </code></pre>
 <p>This approach is used by <code>ListSerializer</code> and <code>MapSerializer</code> to correctly serialize values in a controlled <code>Storage</code> medium. When you call <code>serializers.serialize*</code> with this intermediate storage, instead of serializing the value inside the <code>Storage</code> provided to <code>serialize</code> method, it does by serializing the value inside the provided <code>Storage</code> medium, thus serializing the value inside a controlled context, which will not overwrite or modify the values already stored.</p>
 <p>With this, introspecting the values and changing the structure of them is more safe, as it will not damage the main storage medium (commonly the <code>Config</code> storage), and at in the end of serialization process, you can push to the main storage only the values you care about.</p>
+<h1 id="backend-class"><a class="header" href="#backend-class"><code>Backend</code> class</a></h1>
+<p>Config itself does not implement any configuration format, instead, it backs the configuration loading and saving logic to a backend.</p>
+<p>Currently, the following backend implementations are officially supported:</p>
+<ul>
+<li>Config-Jackson (Using <a href="https://github.com/FasterXML/jackson">fasterxml.jackson</a>)</li>
+<li>Config-XML (Using <a href="https://github.com/FasterXML/jackson-dataformat-xml">fasterxml.jackson-xml</a>)</li>
+<li>Config-Json (Using <a href="https://github.com/fangyidong/json-simple">JSON.simple</a>)</li>
+<li>Config-Yaml (Using <a href="https://bitbucket.org/asomov/snakeyaml/">snakeyaml</a> YAML 1.1 compliant)</li>
+<li>Config-Yaml-1.2 (Using <a href="https://bitbucket.org/asomov/snakeyaml-engine/">snakeyaml-engine</a> YAML 1.2 compliant)</li>
+<li>Config-Toml (Using <a href="https://github.com/tomlj/tomlj">tomlj</a> 1.0.0-rc.1 compliant. With an experimental renderer, as of the time the implementation was written, there is no official TOML writer for Java).</li>
+</ul>
+<p>You could choose one of these backends to load and save your configuration. Also, you are free to write your own Backend implementation, as they are very simple. Config works solely with Java <code>Map</code>, <code>List</code>, <code>String</code> and primitive types.</p>
+<p>Also, Config is not a real-time configuration editor, it will not save the configuration for every update that occurs in the Config object, you need to manually save and load using <code>Config.save</code> and <code>Config.load</code>. If you need a real-time configuration editor with reload capabilities, you could easily write a File Watcher or Scheduler to reload configuration using those methods.</p>
+<h2 id="jackson-backend"><a class="header" href="#jackson-backend">Jackson Backend</a></h2>
+<p>Writes and reads json using Jackson <a href="https://fasterxml.github.io/jackson-databind/javadoc/2.7/com/fasterxml/jackson/databind/ObjectMapper.html">ObjectMapper</a>.</p>
+<h2 id="jackson-xml-backend"><a class="header" href="#jackson-xml-backend">Jackson-XML Backend</a></h2>
+<p>Writes and reads XML using Jackson <a href="https://www.javadoc.io/doc/com.fasterxml.jackson.dataformat/jackson-dataformat-xml/latest/com/fasterxml/jackson/dataformat/xml/XmlMapper.html">XmlMapper</a>.</p>
+<h2 id="json-backend"><a class="header" href="#json-backend">Json backend</a></h2>
+<p>Writes and reads json using <a href="https://code.google.com/archive/p/json-simple/">JSON.simple</a>.</p>
+<h2 id="yaml-backend"><a class="header" href="#yaml-backend">Yaml Backend</a></h2>
+<p>Writes and reads Yaml 1.1 using <a href="https://bitbucket.org/asomov/snakeyaml">snakeyaml</a>.</p>
+<h2 id="toml-backend"><a class="header" href="#toml-backend">Toml Backend</a></h2>
+<p>Reads TOML compliant to 1.0.0-rc.1 using <a href="https://github.com/tomlj/tomlj">tomlj</a> and writes TOML using a custom implementation of TOML rendering.</p>
+<h3 id="note"><a class="header" href="#note">Note</a></h3>
+<p>The Toml backend is able to read any TOML configuration file compliant to 1.0.0-rc.1, however, for writing Toml config, it uses an experimental renderer as there is no recent and maintained Toml library for Java which allows Toml rendering.</p>
+<p>This means that Toml files saved by TOML backend ends up being different from the original, and is not rendered in the best way it could be following the Toml standards.</p>
+<h2 id="yaml-12-backend"><a class="header" href="#yaml-12-backend">YAML 1.2 Backend</a></h2>
+<p>Reads and writes Yaml 1.2 using <a href="https://bitbucket.org/asomov/snakeyaml-engine/">snakeyaml-engine</a>.</p>
+<h3 id="note-1"><a class="header" href="#note-1">Note</a></h3>
+<p>There is a Yaml 1.2 backend which uses snakeyaml-engine to read and write yaml files, however, since <code>Config</code> is fully map-oriented, yaml files which does not have any keys, like this one:</p>
+<pre><code class="language-yaml">- First
+- Second
+- Third
+</code></pre>
+<p>Are loaded normally, but an intermediate section is created, named <code>.</code>. This section allows loading those values normally, and rendering them is made through a special logic which keeps this structure (as long as there is no new keys defined).</p>
+<p>Also, <code>Config</code> calls the <code>Backend</code> to resolve the root key, then the Yaml backend resolve the <code>.</code> as default key, thus allowing to load those values seamlessly without careing about the intermediate section:</p>
+<pre><code class="language-java">public class ConfigLoader {
+    public static Config loadYaml() {
+        // Yaml loading logic...
+        Config config = new Config(new YamlBackend(...));
+        TypeInfo&lt;List&lt;String&gt;&gt; stringListTypeInfo = TypeInfo.builderOf(List.class).of(String.class).buildGeneric();
+        Key&lt;List&lt;String&gt;&gt; values = config.getRootKey().getAs(stringListTypeInfo);
+    }
+}
+</code></pre>
+<p>It is important to know this, because creating a configuration with a key named <code>.</code> with a List value will trigger this behavior. But only for Yaml 1.2 backend.</p>
+<h3 id="maps-inside-the-list"><a class="header" href="#maps-inside-the-list">Maps inside the List</a></h3>
+<p>When there is a map inside the list, like this:</p>
+<pre><code class="language-yaml">- First
+- Second
+- Third
+- Somedata: value
+</code></pre>
+<p>Config will be able to handle this situation, but with limited capabilities. It is able to resolve the <code>somedata</code> key and change its value:</p>
+<pre><code class="language-java">public class ConfigLoader {
+    public static Config loadYaml() {
+        // Yaml loading logic...
+        Config config = new Config(new YamlBackend(...));
+        Key&lt;List&lt;Object&gt;&gt; values = config.getRootKey().getAs(CommonTypes.LIST_OF_OBJECT);
+        Key&lt;String&gt; somedata = values.getKey(&quot;somedata&quot;, String.class);
+        somedata.setValue(&quot;newValue&quot;);
+    }
+}
+</code></pre>
+<p>It is able to create new maps inside the list when needed:</p>
+<pre><code class="language-java">public class ConfigLoader {
+    public static Config loadYaml() {
+        // Yaml loading logic...
+        Config config = new Config(new YamlBackend(...));
+        Key&lt;List&lt;Object&gt;&gt; values = config.getRootKey().getAs(CommonTypes.LIST_OF_OBJECT);
+        Key&lt;String&gt; somedata = values.getKey(&quot;somedata2&quot;, String.class); // new map is created to handle this key
+        somedata.setValue(&quot;newValue2&quot;); 
+    }
+}
+</code></pre>
+<p>And access and change values in a specific index of a list (which must exists):</p>
+<pre><code class="language-java">public class ConfigLoader {
+    public static Config loadYaml() {
+        // Yaml loading logic...
+        Config config = new Config(new YamlBackend(...));
+        Key&lt;List&lt;Object&gt;&gt; values = config.getRootKey().getAs(CommonTypes.LIST_OF_OBJECT);
+        Key&lt;String&gt; index0 = IndexKey.forKeyAndIndex(values, 0);
+        index0.setValue(&quot;newValue2&quot;); 
+    }
+}
+</code></pre>
+<p>However, not all features that Yaml 1.2 supports were tested.</p>
+<h2 id="config-class"><a class="header" href="#config-class"><code>Config</code> class</a></h2>
+<p>Config is a fully map-based <code>Storage</code> implementation, it uses a <code>LinkedHashMap</code> as storage medium, while checks for supported value types using <code>Backend.supports</code>. Thus, every value stored in this class is directly stored in the wrapped <code>LinkedHashMap</code>, and when configuration need to be saved to file, it just sends an unmodifiable copy of this <code>map</code> to the <code>backend</code> (it must be a copy and unmodifiable to avoid concurrency issues).</p>
+<p>Also, Config is not Thread-safe by default, this means that to concurrently write values, you need to implement a locking logic to allow only one modification at a time. We plan to provide a concurrent capable implementation in the future.</p>
+<h1 id="key"><a class="header" href="#key">Key</a></h1>
+<p>The most important class of the Config library. A <strong>Key</strong> represents a pointer to a value in the configuration file, tied to a <strong>key-path</strong>. With this pointer you are able to read and write values directly to the <code>Storage</code> medium without even needing to hold a reference to the <code>Storage</code> itself. Also, you could have different pointers to the same value, and changing a value through one pointer will be reflected in all other pointers (they are not really reflected, they just read the value from the same path, so if the value changes, anyone pointing to this path has access to the new value).</p>
+<h1 id="keyspec"><a class="header" href="#keyspec">KeySpec</a></h1>
+<p>Is a specification of a <code>Key</code> name and type, with <code>KeySpec</code> you refer to a part of the key path. It is used to implement a more readable <code>Key</code> access with constant path parts.</p>
+<h1 id="serializers"><a class="header" href="#serializers">Serializers</a></h1>
+<p>Config also supports serializers. This is very important for the library as it only works with <code>Maps</code>, <code>Lists</code>, <code>Strings</code> and primitive types (different backends could provide support for others types, but the official ones does not).</p>
+<p>Serializers are registered and provided through <code>Serializers</code> class, custom serializers must implement <code>Serializer</code> interface and be registered in <code>Config.getSerializers</code>.</p>
 
                     </main>
 
