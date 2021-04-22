@@ -1,7 +1,1 @@
-# Config
-
-Key based configuration system.
-
-## Backend
-
-The most important part of **Config**. Backend is where value map should be stored and retrieved, but requests are only made
+![LOGO](https://github.com/JonathanxD/Config/raw/master/book/src/logo.png)
