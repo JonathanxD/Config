@@ -416,9 +416,9 @@ public final class Serializers {
                     Object deserializedKey = serializers.deserialize(vKey);
 
                     newStorage.pushValue(vKey, o.getValue()); // Emulated
-                    Object desserializedValue = serializers.deserialize(vValue);
+                    Object deserializedValue = serializers.deserialize(vValue);
 
-                    newMap.put(deserializedKey, desserializedValue);
+                    newMap.put(deserializedKey, deserializedValue);
                 }
 
             }
@@ -466,9 +466,6 @@ public final class Serializers {
 
                 for (int i = 0; i < list.size(); i++) {
                     Object o = list.get(i);
-
-                    if (elementType.equals(TypeInfo.of(Object.class)))
-                        elementType = TypeInfo.of(o.getClass());
 
                     Key<?> newKey = key.getAs(key.getName() + ":" + i, elementType, listStorage);
 

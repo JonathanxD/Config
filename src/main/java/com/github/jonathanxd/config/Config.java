@@ -63,7 +63,7 @@ public class Config extends Storage {
     /**
      * Root key.
      */
-    private final Key<Map<Object, Object>> root = new RootKey(this);
+    private final Key<Map<Object, Object>> root = new RootKey<>(this, TYPE);
 
     /**
      * Backend saver and loader.
@@ -169,15 +169,24 @@ public class Config extends Storage {
      * enclosing config}, children uses the same {@link Storage storage} as this key, but sets the
      * entry of the map instead of the entire map.
      */
-    class RootKey extends Key<Map<Object, Object>> {
+    class RootKey<X> extends Key<X> {
 
         /**
          * Creates a root key.
          *
          * @param config Configuration,
          */
-        RootKey(Config config) {
-            super(config, null, "root", TYPE, Config.this, null);
+        RootKey(Config config, TypeInfo<X> type) {
+            super(config, null, "root", type, Config.this, null);
+        }
+
+        /**
+         * Creates a root key.
+         *
+         * @param config Configuration,
+         */
+        RootKey(Config config, TypeInfo<X> type, Storage storage) {
+            super(config, null, "root", type, storage, null);
         }
 
         @Override
@@ -186,16 +195,68 @@ public class Config extends Storage {
         }
 
         @Override
-        public Map<Object, Object> getValue() {
-            return Config.this.map;
+        public <V> Key<V> getAs(TypeInfo<V> type) {
+            return new RootKey<>(super.getConfig(), type);
+        }
+
+        @Override
+        public <V> Key<V> getAs(TypeInfo<V> type, Storage storage) {
+            return new RootKey<>(super.getConfig(), type, storage);
+        }
+
+        /**
+         * Calling this in the {@link RootKey} has the same effect as calling {@link #getKey(String, TypeInfo)}.
+         *
+         * @inheritDoc
+         */
+        @Override
+        public <V> Key<V> getAs(String name, Class<V> type) {
+            return this.getKey(name, type);
+        }
+
+        /**
+         * Calling this in the {@link RootKey} has the same effect as calling {@link #getKey(String, TypeInfo)}.
+         *
+         * @inheritDoc
+         */
+        @Override
+        public <V> Key<V> getAs(String name, TypeInfo<V> type) {
+            return this.getKey(name, type);
+        }
+
+        /**
+         * Calling this in the {@link RootKey} has the same effect as calling {@link #getKey(String, TypeInfo)} and
+         * then {@link #getAs(String, TypeInfo, Storage)} against the generated key.
+         *
+         * @inheritDoc
+         */
+        @Override
+        public <V> Key<V> getAs(String name, Class<V> type, Storage storage) {
+            return this.getKey(name, type).getAs(name, type, storage);
+        }
+
+        /**
+         * Calling this in the {@link RootKey} has the same effect as calling {@link #getKey(String, TypeInfo)} and
+         * then {@link #getAs(String, TypeInfo, Storage)} against the generated key.
+         *
+         * @inheritDoc
+         */
+        @Override
+        public <V> Key<V> getAs(String name, TypeInfo<V> type, Storage storage) {
+            return this.getKey(name, type).getAs(name, type, storage);
+        }
+
+        @Override
+        public X getValue() {
+            return (X) Config.this.map;
         }
 
         @SuppressWarnings("unchecked")
         @Override
-        public void setValue(Map<Object, Object> value) {
-            Map<Object, Object> map = this.getValue();
+        public void setValue(X value) {
+            Map<Object, Object> map = (Map<Object, Object>) this.getValue();
             map.clear();
-            map.putAll(value);
+            map.putAll((Map<?, ?>) value);
         }
     }
 }

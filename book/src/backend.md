@@ -5,6 +5,7 @@ Config itself does not implement any configuration format, instead, it backs the
 Currently, the following backend implementations are officially supported:
 
 - Config-Jackson (Using [fasterxml.jackson](https://github.com/FasterXML/jackson))
+- Config-XML (Using [fasterxml.jackson-xml](https://github.com/FasterXML/jackson-dataformat-xml))
 - Config-Json (Using [JSON.simple](https://github.com/fangyidong/json-simple))
 - Config-Yaml (Using [snakeyaml](https://bitbucket.org/asomov/snakeyaml/) YAML 1.1 compliant)
 - Config-Yaml-1.2 (Using [snakeyaml-engine](https://bitbucket.org/asomov/snakeyaml-engine/) YAML 1.2 compliant)

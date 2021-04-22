@@ -219,6 +219,9 @@ public class Key<T> {
     /**
      * Gets this key as a get of another type.
      *
+     * The new emulated key type does not guarantee that the value cast will succeed, it depends
+     * on the original type of the key and the key implementation.
+     *
      * @param name New Name.
      * @param type New type.
      * @param <V>  New type.
@@ -230,6 +233,9 @@ public class Key<T> {
 
     /**
      * Gets this key as a get of another type that stores values in alternative {@code storage}.
+     *
+     * The new emulated key type does not guarantee that the value cast will succeed, it depends
+     * on the original type of the key and the key implementation.
      *
      * @param type    New type.
      * @param storage New storage.
@@ -244,6 +250,9 @@ public class Key<T> {
     /**
      * Gets this key as a get of another type.
      *
+     * The new emulated key type does not guarantee that the value cast will succeed, it depends
+     * on the original type of the key and the key implementation.
+     *
      * @param type New type.
      * @param <V>  New type.
      * @return A new emulated key that emulates this key with different type.
@@ -254,6 +263,9 @@ public class Key<T> {
 
     /**
      * Gets this key as a get of another type that stores values in alternative {@code storage}.
+     *
+     * The new emulated key type does not guarantee that the value cast will succeed, it depends
+     * on the original type of the key and the key implementation.
      *
      * @param type    New type.
      * @param storage New storage.
@@ -268,6 +280,9 @@ public class Key<T> {
     /**
      * Gets this key as a get of another type.
      *
+     * The new emulated key type does not guarantee that the value cast will succeed, it depends
+     * on the original type of the key and the key implementation.
+     *
      * @param type New type.
      * @param <V>  New type.
      * @return A new emulated key that emulates this key with different type.
@@ -278,6 +293,9 @@ public class Key<T> {
 
     /**
      * Gets this key as a get of another type that stores values in alternative {@code storage}.
+     *
+     * The new emulated key type does not guarantee that the value cast will succeed, it depends
+     * on the original type of the key and the key implementation.
      *
      * @param type    New type.
      * @param storage New storage.
