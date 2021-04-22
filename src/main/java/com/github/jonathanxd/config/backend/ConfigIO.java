@@ -43,6 +43,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 
 /**
  * A base interface that provides {@link Reader} and {@link Writer} to read and write
@@ -73,6 +74,17 @@ public interface ConfigIO {
      */
     static ConfigIO path(Path path, Charset charset, OpenOption... openOptions) {
         return new NioIO(path, charset, openOptions);
+    }
+
+    /**
+     * Creates a {@link ConfigIO} that provides {@code nio path} reader and writer.
+     *
+     * @param path        Nio path.
+     * @param charset     Charset to encode characters.
+     * @return {@link ConfigIO} that provides {@code nio path} reader and writer.
+     */
+    static ConfigIO path(Path path, Charset charset) {
+        return ConfigIO.path(path, charset, StandardOpenOption.READ, StandardOpenOption.WRITE);
     }
 
     /**

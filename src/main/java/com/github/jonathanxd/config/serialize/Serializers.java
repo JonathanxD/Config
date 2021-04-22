@@ -48,6 +48,8 @@ import com.github.jonathanxd.iutils.type.TypeInfo;
 import com.github.jonathanxd.iutils.type.TypeInfoUtil;
 import com.github.jonathanxd.iutils.type.TypeParameterProvider;
 
+import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -81,12 +83,24 @@ public final class Serializers {
         Serializers.GLOBAL.registerEnumSerializer(TypeInfo.of(TextSerializer.ComponentType.class));
         Serializers.GLOBAL.register(CommonTypes.UUID, new UuidSerializer());
         Serializers.GLOBAL.register(CommonTypes.TEXT_COMPONENT, new TextSerializer());
+        Serializers.GLOBAL.register(CommonTypes.LOCAL_TIME, new LocalTimeSerializer());
+        Serializers.GLOBAL.register(CommonTypes.LOCAL_DATE, new LocalDateSerializer());
+        Serializers.GLOBAL.register(CommonTypes.LOCAL_DATE_TIME, new LocalDateTimeSerializer());
+        Serializers.GLOBAL.register(CommonTypes.ZONED_DATE_TIME, new ZonedDateTimeSerializer());
+        Serializers.GLOBAL.register(CommonTypes.OFFSET_DATE_TIME, new OffsetDateTimeSerializer());
+        Serializers.GLOBAL.register(CommonTypes.OFFSET_TIME, new OffsetTimeSerializer());
+        Serializers.GLOBAL.register(CommonTypes.YEAR, new YearSerializer());
+        Serializers.GLOBAL.register(CommonTypes.YEAR_MONTH, new YearMonthSerializer());
+        Serializers.GLOBAL.register(CommonTypes.MONTH_DAY, new MonthDaySerializer());
+        Serializers.GLOBAL.register(CommonTypes.DURATION, new DurationSerializer());
+        Serializers.GLOBAL.register(CommonTypes.PERIOD, new PeriodSerializer());
+        Serializers.GLOBAL.register(CommonTypes.INSTANT, new InstantSerializer());
     }
 
     /**
      * Map to store serializers.
      */
-    private final Map<TypeInfo<?>, Serializer> serializerMap = new HashMap<>();
+    private final Map<TypeInfo<?>, Serializer<?>> serializerMap = new HashMap<>();
 
     /**
      * Returns true if a serializer of provided {@link TypeInfo type information} is present, false
@@ -264,7 +278,7 @@ public final class Serializers {
         if (this.getSerializerMap().containsKey(typeInfo))
             return Optional.of((Serializer<T>) this.serializerMap.get(typeInfo));
 
-        for (Map.Entry<TypeInfo<?>, Serializer> entry : this.getSerializerMap().entrySet()) {
+        for (Map.Entry<TypeInfo<?>, Serializer<?>> entry : this.getSerializerMap().entrySet()) {
             if (entry.getKey().isAssignableFrom(typeInfo))
                 return Optional.of((Serializer<T>) entry.getValue());
         }
@@ -301,7 +315,7 @@ public final class Serializers {
      *
      * @return Serializer map.
      */
-    private Map<TypeInfo<?>, Serializer> getSerializerMap() {
+    private Map<TypeInfo<?>, Serializer<?>> getSerializerMap() {
         return this.serializerMap;
     }
 
@@ -453,6 +467,9 @@ public final class Serializers {
                 for (int i = 0; i < list.size(); i++) {
                     Object o = list.get(i);
 
+                    if (elementType.equals(TypeInfo.of(Object.class)))
+                        elementType = TypeInfo.of(o.getClass());
+
                     Key<?> newKey = key.getAs(key.getName() + ":" + i, elementType, listStorage);
 
                     listStorage.pushValue(newKey, o);
@@ -543,6 +560,245 @@ public final class Serializers {
             return UUID.fromString(key.getAs(String.class).getValue());
         }
 
+    }
+
+    /**
+     * Serializes {@link LocalTime}.
+     */
+    public static class LocalTimeSerializer implements Serializer<LocalTime> {
+
+        private final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_TIME;
+
+        @Override
+        public void serialize(LocalTime value, Key<LocalTime> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            key.getAs(String.class)
+                    .setValue(this.formatter.format(value));
+
+        }
+
+        @Override
+        public LocalTime deserialize(Key<LocalTime> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            return LocalTime.parse(key.getAs(String.class).getValue(), this.formatter);
+        }
+    }
+
+    /**
+     * Serializes {@link LocalDate}.
+     */
+    public static class LocalDateSerializer implements Serializer<LocalDate> {
+
+        private final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE;
+
+        @Override
+        public void serialize(LocalDate value, Key<LocalDate> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            key.getAs(String.class)
+                    .setValue(this.formatter.format(value));
+
+        }
+
+        @Override
+        public LocalDate deserialize(Key<LocalDate> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            return LocalDate.parse(key.getAs(String.class).getValue(), this.formatter);
+        }
+    }
+
+    /**
+     * Serializes {@link LocalDateTime}.
+     */
+    public static class LocalDateTimeSerializer implements Serializer<LocalDateTime> {
+
+        private final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+
+        @Override
+        public void serialize(LocalDateTime value, Key<LocalDateTime> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            key.getAs(String.class)
+                    .setValue(this.formatter.format(value));
+
+        }
+
+        @Override
+        public LocalDateTime deserialize(Key<LocalDateTime> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            return LocalDateTime.parse(key.getAs(String.class).getValue(), this.formatter);
+        }
+    }
+
+    /**
+     * Serializes {@link ZonedDateTime}.
+     */
+    public static class ZonedDateTimeSerializer implements Serializer<ZonedDateTime> {
+
+        private final DateTimeFormatter formatter = DateTimeFormatter.ISO_ZONED_DATE_TIME;
+
+        @Override
+        public void serialize(ZonedDateTime value, Key<ZonedDateTime> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            key.getAs(String.class)
+                    .setValue(this.formatter.format(value));
+
+        }
+
+        @Override
+        public ZonedDateTime deserialize(Key<ZonedDateTime> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            return ZonedDateTime.parse(key.getAs(String.class).getValue(), this.formatter);
+        }
+    }
+
+    /**
+     * Serializes {@link OffsetDateTime}.
+     */
+    public static class OffsetDateTimeSerializer implements Serializer<OffsetDateTime> {
+
+        private final DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+
+        @Override
+        public void serialize(OffsetDateTime value, Key<OffsetDateTime> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            key.getAs(String.class)
+                    .setValue(this.formatter.format(value));
+
+        }
+
+        @Override
+        public OffsetDateTime deserialize(Key<OffsetDateTime> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            return OffsetDateTime.parse(key.getAs(String.class).getValue(), this.formatter);
+        }
+    }
+
+    /**
+     * Serializes {@link OffsetTime}.
+     */
+    public static class OffsetTimeSerializer implements Serializer<OffsetTime> {
+
+        private final DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+
+        @Override
+        public void serialize(OffsetTime value, Key<OffsetTime> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            key.getAs(String.class)
+                    .setValue(this.formatter.format(value));
+
+        }
+
+        @Override
+        public OffsetTime deserialize(Key<OffsetTime> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            return OffsetTime.parse(key.getAs(String.class).getValue(), this.formatter);
+        }
+    }
+
+    /**
+     * Serializes {@link Year}.
+     */
+    public static class YearSerializer implements Serializer<Year> {
+
+        @Override
+        public void serialize(Year value, Key<Year> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            key.getAs(Integer.class)
+                    .setValue(value.getValue());
+
+        }
+
+        @Override
+        public Year deserialize(Key<Year> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            return Year.of(key.getAs(Integer.class).getValue());
+        }
+    }
+
+    /**
+     * Serializes {@link YearMonth}.
+     */
+    public static class YearMonthSerializer implements Serializer<YearMonth> {
+
+        @Override
+        public void serialize(YearMonth value, Key<YearMonth> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            Key<Integer> yearKey = key.getKey("year", Integer.class);
+            Key<Integer> monthKey = key.getKey("month", Integer.class);
+            yearKey.setValue(value.getYear());
+            monthKey.setValue(value.getMonthValue());
+
+        }
+
+        @Override
+        public YearMonth deserialize(Key<YearMonth> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            Key<Integer> yearKey = key.getKey("year", Integer.class);
+            Key<Integer> monthKey = key.getKey("month", Integer.class);
+            return YearMonth.of(yearKey.getValue(), monthKey.getValue());
+        }
+    }
+
+    /**
+     * Serializes {@link MonthDay}.
+     */
+    public static class MonthDaySerializer implements Serializer<MonthDay> {
+
+        @Override
+        public void serialize(MonthDay value, Key<MonthDay> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            Key<Integer> monthKey = key.getKey("month", Integer.class);
+            Key<Integer> dayKey = key.getKey("day", Integer.class);
+            monthKey.setValue(value.getMonthValue());
+            dayKey.setValue(value.getDayOfMonth());
+
+        }
+
+        @Override
+        public MonthDay deserialize(Key<MonthDay> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            Key<Integer> monthKey = key.getKey("month", Integer.class);
+            Key<Integer> dayKey = key.getKey("day", Integer.class);
+            return MonthDay.of(monthKey.getValue(), dayKey.getValue());
+        }
+    }
+
+    /**
+     * Serializes {@link Duration}.
+     */
+    public static class DurationSerializer implements Serializer<Duration> {
+
+        @Override
+        public void serialize(Duration value, Key<Duration> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            key.getAs(String.class)
+                    .setValue(value.toString());
+
+        }
+
+        @Override
+        public Duration deserialize(Key<Duration> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            return Duration.parse(key.getAs(String.class).getValue());
+        }
+    }
+
+    /**
+     * Serializes {@link Period}.
+     */
+    public static class PeriodSerializer implements Serializer<Period> {
+
+        @Override
+        public void serialize(Period value, Key<Period> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            key.getAs(String.class)
+                    .setValue(value.toString());
+
+        }
+
+        @Override
+        public Period deserialize(Key<Period> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            return Period.parse(key.getAs(String.class).getValue());
+        }
+    }
+
+
+    /**
+     * Serializes {@link Instant}.
+     */
+    public static class InstantSerializer implements Serializer<Instant> {
+
+        private final DateTimeFormatter formatter = DateTimeFormatter.ISO_INSTANT;
+
+        @Override
+        public void serialize(Instant value, Key<Instant> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            key.getAs(String.class)
+                    .setValue(this.formatter.format(value));
+
+        }
+
+        @Override
+        public Instant deserialize(Key<Instant> key, TypeInfo<?> typeInfo, Storage storage, Serializers serializers) {
+            return this.formatter.parse(key.getAs(String.class).getValue(), Instant::from);
+        }
     }
 
     /**

@@ -105,8 +105,8 @@ public class Config extends Storage {
      *
      * @return Root key.
      */
-    public Key<Map<Object, Object>> getRootKey() {
-        return this.root;
+    public Key<?> getRootKey() {
+        return this.getBackend().resolveRoot(this.root);
     }
 
     /**

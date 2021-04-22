@@ -32,10 +32,7 @@ import com.github.jonathanxd.config.serialize.Serializers;
 import com.github.jonathanxd.iutils.function.stream.BiStreams;
 import com.github.jonathanxd.iutils.type.TypeInfo;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -121,6 +118,17 @@ public abstract class Storage {
      */
     public static Storage createInnerStorage(Key<?> key) {
         return new InnerStorage(key, key.getStorage());
+    }
+
+    /**
+     * In this case, {@code outerStorage} is the {@code key} {@link Key#getStorage() storage}.
+     *
+     * @param key Key to be used to store the section in {@code outerStorage}.
+     * @return An inner storage that stores value in a new section.
+     * @see #createInnerStorage(Key, Storage)
+     */
+    public static Storage createInnerIndexStorage(Key<?> key) {
+        return new InnerIndexStorage(key, key.getStorage());
     }
 
     /**
@@ -366,6 +374,63 @@ public abstract class Storage {
         }
     }
 
+    static class InnerIndexStorage extends InnerStorage {
+        /**
+         * Creates a storage that references to a section in {@code outer} storage.
+         *
+         * @param key   Key to be used as path.
+         * @param outer Outer storage.
+         * @see Storage#createInnerStorage(Key, Storage)
+         */
+        InnerIndexStorage(Key<?> key, Storage outer) {
+            super(key, outer);
+        }
+
+        @Override
+        public boolean exists(Key<?> key) {
+            int index = this.indexKey(key).getIndex();
+            return index < this.retrieveList().size();
+        }
+
+        @Override
+        public Object fetchValue(Key<?> key) {
+            if (!this.exists(key))
+                throw new KeyNotFoundException(key);
+
+            List<?> objects = this.retrieveList();
+            return objects.get(this.indexKey(key).getIndex());
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public void pushValue(Key<?> key, Object value) {
+            if (!this.exists(key))
+                throw new KeyNotFoundException(key);
+
+            List<Object> objects = (List<Object>) this.retrieveList();
+            objects.set(this.indexKey(key).getIndex(), value);
+
+            ((Key<List<Object>>) super.key).setValue(objects);
+        }
+
+        private IndexKey<?> indexKey(Key<?> key) {
+            if (key instanceof IndexKey<?>) {
+                return ((IndexKey<?>) key);
+            } else {
+                throw new IllegalStateException("Trying check index of a non-IndexKey key. Provided key: '"+key+"'.");
+            }
+        }
+
+        private List<?> retrieveList() {
+            Object o = super.key.getValue();
+            if (o instanceof List<?>) {
+                return ((List<?>) o);
+            } else {
+                throw new IllegalStateException("Trying to access index of non-list value of key '"+super.key+"'.");
+            }
+        }
+    }
+
     /**
      * Storage that references to a section in an outer storage.
      *
@@ -376,12 +441,12 @@ public abstract class Storage {
         /**
          * Path key
          */
-        private final Key<?> key;
+        protected final Key<?> key;
 
         /**
          * Outer storage.
          */
-        private final Storage outer;
+        protected final Storage outer;
 
         /**
          * Creates a storage that references to a section in {@code outer} storage.
@@ -406,7 +471,7 @@ public abstract class Storage {
         @SuppressWarnings("unchecked")
         @Override
         public void pushValue(Key<?> key, Object value) {
-            this.getMap().put(key.getName(), value);
+            this.getMap(key).put(key.getName(), value);
         }
 
         @Override
@@ -414,7 +479,7 @@ public abstract class Storage {
             if (!this.exists(key))
                 throw new KeyNotFoundException(key);
 
-            return this.getMap().get(key.getName());
+            return this.getMap(key).get(key.getName());
         }
 
         @Override
@@ -423,20 +488,42 @@ public abstract class Storage {
         }
 
         @SuppressWarnings("unchecked")
-        public Map<String, Object> getMap() {
+        public Map<String, Object> getMap(Key<?> knownKey) {
             this.createIfNeeded();
-            return (Map<String, Object>) this.outer.fetchValue(this.key);
+            Object o = this.outer.fetchValue(this.key);
+            if (!(o instanceof Map<?, ?>)) {
+                if (o instanceof List<?>) {
+                    List<Object> objects = (List<Object>) o;
+                    for (Object obj : objects) {
+                        if (obj instanceof Map<?, ?> && ((Map<?, ?>) obj).containsKey(knownKey.getName())) {
+                            return (Map<String, Object>) obj;
+                        }
+                    }
+
+                    Map<String, Object> map = new LinkedHashMap<>();
+                    objects.add(map);
+                    return map;
+                }
+
+                throw new IllegalArgumentException("Could not treat a '"+o.getClass().getSimpleName()+"' as Map<?, ?> for the key '"+this.key+"'.");
+            }
+
+            return (Map<String, Object>) o;
+        }
+
+        private Object fetchValue() {
+            return this.outer.fetchValue(this.key);
         }
 
         @Override
         public boolean exists(Key<?> key) {
-            return this.getMap().containsKey(key.getName());
+            return this.getMap(key).containsKey(key.getName());
         }
 
         @Override
         public String toString() {
             return "InnerStorage[key='" + KeyUtil.getPathAsString(this.key) + "', outer='" + this.outer + "', map=" +
-                    (this.outer.exists(this.key) ? this.getMap() : "absent") +
+                    (this.outer.exists(this.key) ? this.fetchValue() : "absent") +
                     "]";
         }
     }

@@ -28,6 +28,7 @@
 package com.github.jonathanxd.config.backend;
 
 import com.github.jonathanxd.config.CommonTypes;
+import com.github.jonathanxd.config.Key;
 import com.github.jonathanxd.config.serialize.Serializers;
 import com.github.jonathanxd.iutils.type.TypeInfo;
 
@@ -87,5 +88,15 @@ public interface Backend {
      * @param serializers Serializer manager.
      */
     default void registerSerializers(Serializers serializers) {
+    }
+
+    /**
+     * Specifies a root key different from the {@code defaultRootKey} to be used.
+     *
+     * @param defaultRootKey Default root key.
+     * @return New root key.
+     */
+    default Key<?> resolveRoot(Key<?> defaultRootKey) {
+        return defaultRootKey;
     }
 }

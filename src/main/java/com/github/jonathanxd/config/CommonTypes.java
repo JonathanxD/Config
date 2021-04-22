@@ -32,6 +32,7 @@ import com.github.jonathanxd.iutils.text.TextComponent;
 import com.github.jonathanxd.iutils.type.TypeInfo;
 import com.github.jonathanxd.iutils.type.TypeParameterProvider;
 
+import java.time.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -73,9 +74,25 @@ public class CommonTypes {
     public static final TypeInfo<UUID> UUID = TypeInfo.of(UUID.class);
     public static final TypeInfo<TextComponent> TEXT_COMPONENT = TypeInfo.of(TextComponent.class);
 
+    // Date
+    public static final TypeInfo<LocalTime> LOCAL_TIME = TypeInfo.of(LocalTime.class);
+    public static final TypeInfo<LocalDate> LOCAL_DATE = TypeInfo.of(LocalDate.class);
+    public static final TypeInfo<LocalDateTime> LOCAL_DATE_TIME = TypeInfo.of(LocalDateTime.class);
+    public static final TypeInfo<ZonedDateTime> ZONED_DATE_TIME = TypeInfo.of(ZonedDateTime.class);
+    public static final TypeInfo<OffsetDateTime> OFFSET_DATE_TIME = TypeInfo.of(OffsetDateTime.class);
+    public static final TypeInfo<OffsetTime> OFFSET_TIME = TypeInfo.of(OffsetTime.class);
+    public static final TypeInfo<Year> YEAR = TypeInfo.of(Year.class);
+    public static final TypeInfo<YearMonth> YEAR_MONTH = TypeInfo.of(YearMonth.class);
+    public static final TypeInfo<MonthDay> MONTH_DAY = TypeInfo.of(MonthDay.class);
+    public static final TypeInfo<Duration> DURATION = TypeInfo.of(Duration.class);
+    public static final TypeInfo<Period> PERIOD = TypeInfo.of(Period.class);
+    public static final TypeInfo<Instant> INSTANT = TypeInfo.of(Instant.class);
+
     public static final TypeInfo<Map> MAP = TypeInfo.of(Map.class);
     public static final TypeInfo<Map<Object, Object>> MAP_OF_OBJECT = TypeInfo.builderOf(Map.class).of(Object.class, Object.class).buildGeneric();
     public static final TypeInfo<List> LIST = TypeInfo.of(List.class);
+    public static final TypeInfo<List<Object>> LIST_OF_OBJECT = TypeInfo.builderOf(List.class).of(Object.class).buildGeneric();
+    public static final TypeInfo<List<String>> LIST_OF_STRING = TypeInfo.builderOf(List.class).of(String.class).buildGeneric();
 
     public static final TypeInfo<TypeInfo<?>> TYPE_INFO = new TypeParameterProvider<TypeInfo<?>>() {
     }.createTypeInfo();

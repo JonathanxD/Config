@@ -64,8 +64,8 @@ public class TomlBackendTest {
         Key<Map<Object, Object>> rootKey = config.getRootKey();
 
         Key<Long> port = rootKey
-                .getKey("server", CommonTypes.MAP_OF_OBJECT)
-                .getKey("cfg", CommonTypes.MAP_OF_OBJECT)
+                .getKeySection("server")
+                .getKeySection("cfg")
                 .getKey("port", CommonTypes.LONG);
 
         long loadedPort = port.getValue();
