@@ -52,7 +52,7 @@ public class SimpleTest {
         this.registerSerializers(config);
 
         // Keys
-        Key<Map<Object, Object>> rootKey = config.getRootKey();
+        Key<Map<Object, Object>> rootKey = config.getRootKey().getAs(CommonTypes.MAP_OF_OBJECT);
         Key<Map<Person, Score>> scoreKey = rootKey.getKey("score", new TypeParameterProvider<Map<Person, Score>>(){}.createTypeInfo());
         Key<My> myKey = rootKey.getKey("myEnum", new TypeParameterProvider<My>(){}.createTypeInfo());
         // /Keys

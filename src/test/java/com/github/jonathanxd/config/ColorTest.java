@@ -51,7 +51,7 @@ public class ColorTest {
         this.registerSerializers(config);
 
         // Keys
-        Key<Map<Object, Object>> rootKey = config.getRootKey();
+        Key<Map<Object, Object>> rootKey = config.getRootKey().getAs(CommonTypes.MAP_OF_OBJECT);
         Key<Void> messagesSection = rootKey.getKey("messages", Void.TYPE); // Void key is same as a Section
         Key<TextComponent> welcomeMessage = messagesSection.getKey("welcome", TextComponent.class);
         // /Keys

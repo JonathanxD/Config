@@ -68,7 +68,7 @@ public class CfgTest {
             }
         });
 
-        Key<Map<Object, Object>> rootKey = config.getRootKey();
+        Key<Map<Object, Object>> rootKey = config.getRootKey().getAs(CommonTypes.MAP_OF_OBJECT);
 
         Key<String> name = rootKey.getKey("name", TypeInfo.of(String.class)).getKey("n", String.class);
 
@@ -123,7 +123,7 @@ public class CfgTest {
             }
         });
 
-        Key<Map<Object, Object>> rootKey = config.getRootKey();
+        Key<Map<Object, Object>> rootKey = config.getRootKey().getAs(CommonTypes.MAP_OF_OBJECT);
 
         Map<String, String> mapi = new HashMap<>();
 
@@ -161,7 +161,7 @@ public class CfgTest {
                     System.out.println("Yaml = " + yamlStr.get() + "                  [action=SAVE]");
                 }, () -> (Map<Object, Object>) yaml.load(yamlStr.get())));
 
-        Key<Map<Object, Object>> rootKey = config.getRootKey();
+        Key<Map<Object, Object>> rootKey = config.getRootKey().getAs(CommonTypes.MAP_OF_OBJECT);
 
         Map<String, String> mapi = new HashMap<>();
 
@@ -223,7 +223,7 @@ public class CfgTest {
                     System.out.println("Yaml = " + yamlStr.get() + "                  [action=SAVE]");
                 }, () -> (Map<Object, Object>) yaml.load(yamlStr.get())));
 
-        Key<Map<Object, Object>> rootKey = config.getRootKey();
+        Key<Map<Object, Object>> rootKey = config.getRootKey().getAs(CommonTypes.MAP_OF_OBJECT);
 
         Map<String, String> mapi = new HashMap<>();
 
@@ -276,7 +276,7 @@ public class CfgTest {
     }
 
     private void read(Config config) {
-        Key<Map<Object, Object>> rootKey = config.getRootKey();
+        Key<Map<Object, Object>> rootKey = config.getRootKey().getAs(CommonTypes.MAP_OF_OBJECT);
 
         Key<List<Map<String, String>>> oops = rootKey.getKey("oops",
                 new TypeParameterProvider<List<Map<String, String>>>() {

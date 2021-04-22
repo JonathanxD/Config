@@ -61,7 +61,7 @@ public class TomlBackendTest {
         Config config = new Config(jsonBackend);
         config.load();
 
-        Key<Map<Object, Object>> rootKey = config.getRootKey();
+        Key<Map<Object, Object>> rootKey = config.getRootKey().getAs(CommonTypes.MAP_OF_OBJECT);
 
         Key<Long> port = rootKey
                 .getKeySection("server")
