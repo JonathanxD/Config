@@ -2,6 +2,7 @@ group 'com.github.jonathanxd'
 
 apply plugin: 'java'
 apply plugin: 'license'
+apply plugin: 'maven-publish'
 
 jar {
     manifest {
@@ -12,18 +13,20 @@ jar {
 
 repositories {
     mavenCentral()
-    maven { url "https://jitpack.io" }
+    maven {
+        name = "JGang"
+        url "https://gitlab.com/api/v4/projects/30392813/packages/maven"
+    }
 }
 
 dependencies {
     implementation rootProject
-    implementation "com.github.JonathanxD:JwIUtils:4.17.2"
-    implementation 'com.github.JonathanxD.JwIUtils:JwIUtils:4.17.2'
-    implementation 'com.github.JonathanxD.JwIUtils:links:4.17.2'
-    implementation 'com.github.JonathanxD.JwIUtils:json-lang-loader:4.17.2'
-    implementation 'com.github.JonathanxD.JwIUtils:jwiutils-kt:4.17.2'
-    implementation 'com.github.JonathanxD.JwIUtils:properties:4.17.2'
-    implementation 'com.github.JonathanxD.JwIUtils:specializations:4.17.2'
+    implementation "com.github.jonathanxd:jwiutils:4.18.3"
+    implementation 'com.github.jonathanxd:links:4.18.3'
+    implementation 'com.github.jonathanxd:json-lang-loader:4.18.3'
+    implementation 'com.github.jonathanxd:jwiutils-kt:4.18.3'
+    implementation 'com.github.jonathanxd:properties:4.18.3'
+    implementation 'com.github.jonathanxd:specializations:4.18.3'
     implementation 'com.fasterxml.jackson.core:jackson-core:2.12.3'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.3'
     testImplementation group: 'junit', name:'junit', version: '4.11'
@@ -67,5 +70,57 @@ license {
 
     mapping {
         java = 'SLASHSTAR_STYLE'
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "Local"
+            // change to point to your repo, e.g. http://my.org/repo
+            url = "$buildDir/repo"
+        }
+        maven {
+            name = "GitLab"
+            url "https://gitlab.com/api/v4/projects/29596414/packages/maven"
+            credentials(HttpHeaderCredentials) {
+                def ciToken = System.getenv("CI_JOB_TOKEN")
+                if (ciToken != null && !ciToken.isEmpty()) {
+                    name = "Job-Token"
+                    value = System.getenv("CI_JOB_TOKEN")
+                } else {
+                    name = "Private-Token"
+                    value = project.findProperty("GITLAB_TOKEN") ?: System.getenv("GITLAB_TOKEN")
+                }
+            }
+            authentication {
+                header(HttpHeaderAuthentication)
+            }
+        }
+        maven {
+            name = "GitLabJgang"
+            url "https://gitlab.com/api/v4/projects/30392813/packages/maven"
+            credentials(HttpHeaderCredentials) {
+                def ciToken = System.getenv("CI_JOB_TOKEN")
+                if (ciToken != null && !ciToken.isEmpty()) {
+                    name = "Job-Token"
+                    value = System.getenv("CI_JOB_TOKEN")
+                } else {
+                    name = "Private-Token"
+                    value = project.findProperty("GITLAB_TOKEN") ?: System.getenv("GITLAB_TOKEN")
+                }
+            }
+            authentication {
+                header(HttpHeaderAuthentication)
+            }
+        }
+    }
+    publications {
+        maven(MavenPublication) {
+            artifactId 'config-jackson'
+            from components.java
+
+            artifact sourcesJar
+        }
     }
 }

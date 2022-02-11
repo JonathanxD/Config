@@ -1,0 +1,132 @@
+group 'com.github.jonathanxd'
+
+apply plugin: 'java'
+apply plugin: 'license'
+apply plugin: 'maven-publish'
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'Config-Jackson',
+                'Implementation-Version': project.version
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        name = "JGang"
+        url "https://gitlab.com/api/v4/projects/30392813/packages/maven"
+    }
+}
+
+dependencies {
+    implementation rootProject
+    implementation "com.github.jonathanxd:jwiutils:4.18.3"
+    implementation 'com.github.jonathanxd:links:4.18.3'
+    implementation 'com.github.jonathanxd:json-lang-loader:4.18.3'
+    implementation 'com.github.jonathanxd:jwiutils-kt:4.18.3'
+    implementation 'com.github.jonathanxd:properties:4.18.3'
+    implementation 'com.github.jonathanxd:specializations:4.18.3'
+    implementation 'org.jetbrains:annotations:22.0.0'
+    implementation 'org.spongepowered:configurate-core:4.1.2'
+    testImplementation 'org.spongepowered:configurate-hocon:4.1.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.5.2'
+    testRuntimeOnly "org.junit.platform:junit-platform-runner:1.5.2"
+}
+
+test {
+    useJUnitPlatform()
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: classes) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
+
+license {
+    ext.name = 'Config-Hocon'
+    ext.organization = 'TheRealBuggy/JonathanxD (https://github.com/JonathanxD/)'
+    ext.description = 'Hocon backend for Config'
+    ext.url = 'https://github.com/JonathanxD/Config/'
+    ext.year = Calendar.getInstance().get(Calendar.YEAR)
+    ext.email = 'jonathan.scripter@programmer.net'
+
+    exclude "**/*.info"
+    exclude "**/*.md"
+    exclude "res/**"
+    exclude "src/main/resources/**"
+    exclude "src/test/resources/**"
+
+    header file('../LICENSE_HEADER')
+
+    sourceSets = project.sourceSets
+
+    ignoreFailures false
+    strictCheck true
+
+    mapping {
+        java = 'SLASHSTAR_STYLE'
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "Local"
+            // change to point to your repo, e.g. http://my.org/repo
+            url = "$buildDir/repo"
+        }
+        maven {
+            name = "GitLab"
+            url "https://gitlab.com/api/v4/projects/29596414/packages/maven"
+            credentials(HttpHeaderCredentials) {
+                def ciToken = System.getenv("CI_JOB_TOKEN")
+                if (ciToken != null && !ciToken.isEmpty()) {
+                    name = "Job-Token"
+                    value = System.getenv("CI_JOB_TOKEN")
+                } else {
+                    name = "Private-Token"
+                    value = project.findProperty("GITLAB_TOKEN") ?: System.getenv("GITLAB_TOKEN")
+                }
+            }
+            authentication {
+                header(HttpHeaderAuthentication)
+            }
+        }
+        maven {
+            name = "GitLabJgang"
+            url "https://gitlab.com/api/v4/projects/30392813/packages/maven"
+            credentials(HttpHeaderCredentials) {
+                def ciToken = System.getenv("CI_JOB_TOKEN")
+                if (ciToken != null && !ciToken.isEmpty()) {
+                    name = "Job-Token"
+                    value = System.getenv("CI_JOB_TOKEN")
+                } else {
+                    name = "Private-Token"
+                    value = project.findProperty("GITLAB_TOKEN") ?: System.getenv("GITLAB_TOKEN")
+                }
+            }
+            authentication {
+                header(HttpHeaderAuthentication)
+            }
+        }
+    }
+    publications {
+        maven(MavenPublication) {
+            artifactId 'config-sponge-configurate'
+            from components.java
+
+            artifact sourcesJar
+        }
+    }
+}
